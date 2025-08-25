@@ -382,7 +382,7 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea type="text" " 
+                                            <textarea type="text"  
                                                    class="flex-1 border-none outline-none bg-transparent" 
                                                    onchange="autoSave()">${noteText}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
