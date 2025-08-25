@@ -359,9 +359,9 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <input type="text" value="${cue}" style="width: 100%; overflow: visible; display: block;"
+                                            <textarea type="text" value="${cue}"
                                                    class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()">
+                                                   onchange="autoSave()"></textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -377,9 +377,9 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <input type="text" value="${noteText}" 
+                                            <textarea type="text" value="${noteText}" 
                                                    class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()">
+                                                   onchange="autoSave()"></textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
