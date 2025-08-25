@@ -359,8 +359,8 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <input type="text" value="${cue}" style="width: 100%; overflow: visible;"
-                                                   class="border-none outline-none bg-transparent" 
+                                            <input type="text" value="${cue}" style="width: 100%; overflow: visible; display: block;"
+                                                   class="flex-1 border-none outline-none bg-transparent" 
                                                    onchange="autoSave()">
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
