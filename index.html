@@ -462,10 +462,10 @@
             const noteInputs = document.querySelectorAll('#notesContent textarea');
 
             if (cueInputs.length > 0) {
-                note.cues = Array.from(cueInputs).map(input => input.value).filter(v => v.trim());
+                note.cues = Array.from(cueInputs).map(input => input.innerHTML).filter(v => v.trim());
             }
             if (noteInputs.length > 0) {
-                note.notes = Array.from(noteInputs).map(input => input.value).filter(v => v.trim());
+                note.notes = Array.from(noteInputs).map(input => input.inerHTML).filter(v => v.trim());
             }
 
             await saveClasses();
