@@ -360,11 +360,11 @@
                                     <h4 class="font-medium text-gray-700">Cues & Questions</h4>
                                     <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
                                 </div>
-                                <div  class="space-y-2">
+                                <div id="cueContent" class="space-y-2">
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <textarea id="cueContent" type="text" 
+                                            <textarea id="cue" type="text" 
                                                    class="flex-1 border-none outline-none bg-transparent" 
                                                    onchange="autoSave()">${cue}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
@@ -378,11 +378,11 @@
                                     <h4 class="font-medium text-gray-700">Notes</h4>
                                     <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
                                 </div>
-                                <div  class="space-y-2">
+                                <div id="notesContent" class="space-y-2">
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea id="notesContent" type="text"  
+                                            <textarea id="note" type="text"  
                                                    class="flex-1 border-none outline-none bg-transparent" 
                                                    onchange="autoSave()">${noteText}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
@@ -463,8 +463,8 @@
             if (dateEl) note.date = dateEl.innerHTML;
             if (summaryEl) note.summary = summaryEl.innerHTML;
 
-            const cueInputs = document.querySelectorAll('#cueContent');
-            const noteInputs = document.querySelectorAll('#notesContent');
+            const cueInputs = document.querySelectorAll('#cue');
+            const noteInputs = document.querySelectorAll('#note');
 
             if (cueInputs.length > 0) {
                 note.cues = Array.from(cueInputs).map(input => input.innerHTML)
