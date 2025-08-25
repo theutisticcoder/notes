@@ -24,7 +24,7 @@
         .summary-section { grid-column: 1 / -1; grid-row: 3; }
         .header-section { grid-column: 1 / -1; grid-row: 1; }
         textarea{
-            field-sizing: content;
+            height: auto;
         }
     </style>
 </head>
@@ -462,8 +462,8 @@
             if (dateEl) note.date = dateEl.innerText;
             if (summaryEl) note.summary = summaryEl.innerText;
 
-            const cueInputs = document.querySelectorAll('#cueContent input');
-            const noteInputs = document.querySelectorAll('#notesContent input');
+            const cueInputs = document.querySelectorAll('#cueContent');
+            const noteInputs = document.querySelectorAll('#notesContent');
 
             if (cueInputs.length > 0) {
                 note.cues = Array.from(cueInputs).map(input => input.value).filter(v => v.trim());
