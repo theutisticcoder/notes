@@ -6,6 +6,7 @@
     <title>Cornell Notes App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -25,7 +26,6 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Cornell Notes</h1>
             <button onclick="addClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
@@ -33,12 +33,9 @@
             </button>
         </div>
 
-        <!-- Classes Grid -->
         <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Classes will be dynamically added here -->
-        </div>
+            </div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="text-center py-12 text-gray-500">
             <div class="text-6xl mb-4">📚</div>
             <h3 class="text-xl font-medium mb-2">No classes yet</h3>
@@ -46,7 +43,6 @@
         </div>
     </div>
 
-    <!-- Add Class Modal -->
     <div id="classModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4">Add New Class</h3>
@@ -63,7 +59,6 @@
         </div>
     </div>
 
-    <!-- Delete Class Modal -->
     <div id="deleteClassModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Class</h3>
@@ -79,7 +74,6 @@
         </div>
     </div>
 
-    <!-- Delete Note Modal -->
     <div id="deleteNoteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Note</h3>
@@ -95,7 +89,6 @@
         </div>
     </div>
 
-    <!-- Note Taking Modal -->
     <div id="noteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">
@@ -105,7 +98,6 @@
             
             <div class="flex-1 p-4">
                 <div class="cornell-grid h-full">
-                    <!-- Header -->
                     <div class="header-section bg-white p-4">
                         <input type="text" id="noteTitle" placeholder="Note title..." 
                                class="w-full text-lg font-medium border-none outline-none bg-transparent">
@@ -113,29 +105,24 @@
                                class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
                     </div>
                     
-                    <!-- Cue Column -->
                     <div class="cue-column bg-white p-4">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-medium text-gray-700">Cues & Questions</h4>
                             <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
                         </div>
                         <div id="cueContent" class="space-y-2">
-                            <!-- Cue bullets will be added here -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Notes Column -->
                     <div class="notes-column bg-white p-4">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-medium text-gray-700">Notes</h4>
                             <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
                         </div>
                         <div id="notesContent" class="space-y-2">
-                            <!-- Note bullets will be added here -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Summary Section -->
                     <div class="summary-section bg-white p-4">
                         <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
                         <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
@@ -147,14 +134,18 @@
     </div>
 
     <script>
-        let classes = JSON.parse(localStorage.getItem('cornellClasses') || '[]');
+        let classes = [];
         let currentClassId = null;
         let currentNoteId = null;
         let deleteClassId = null;
         let deleteNoteId = null;
 
-        function saveData() {
-            localStorage.setItem('cornellClasses', JSON.stringify(classes));
+        // New variables for audio recording
+        let recognition;
+        let isTranscribing = false;
+
+        async function saveClasses() {
+            await localforage.setItem('cornellClasses', classes);
         }
 
         function addClass() {
@@ -169,7 +160,7 @@
             document.getElementById('classNameInput').value = '';
         }
 
-        function saveClass() {
+        async function saveClass() {
             const className = document.getElementById('classNameInput').value.trim();
             if (!className) return;
 
@@ -180,12 +171,12 @@
             };
 
             classes.push(newClass);
-            saveData();
-            renderClasses();
+            await saveClasses();
+            await renderClasses();
             closeModal();
         }
 
-        function deleteClass(classId) {
+        async function deleteClass(classId) {
             deleteClassId = classId;
             const classObj = classes.find(c => c.id === classId);
             document.getElementById('deleteClassName').textContent = classObj.name;
@@ -199,11 +190,11 @@
             deleteClassId = null;
         }
 
-        function confirmDeleteClass() {
+        async function confirmDeleteClass() {
             if (deleteClassId) {
                 classes = classes.filter(c => c.id !== deleteClassId);
-                saveData();
-                renderClasses();
+                await saveClasses();
+                await renderClasses();
                 closeDeleteClassModal();
             }
         }
@@ -283,20 +274,20 @@
             document.getElementById('noteModal').classList.remove('flex');
         }
 
-        function createNewNote() {
+        async function createNewNote() {
             const newNote = {
                 id: Date.now(),
                 title: '',
                 date: new Date().toLocaleDateString(),
                 cues: [],
                 notes: [],
-                summary: ''
+                summary: []
             };
             
             const classObj = classes.find(c => c.id === currentClassId);
             if (!classObj.notes) classObj.notes = [];
             classObj.notes.push(newNote);
-            saveData();
+            await saveClasses();
             
             editNote(newNote.id);
         }
@@ -308,7 +299,7 @@
             showNoteEditor(note);
         }
 
-        function deleteNote(noteId) {
+        async function deleteNote(noteId) {
             deleteNoteId = noteId;
             const classObj = classes.find(c => c.id === currentClassId);
             const note = classObj.notes.find(n => n.id === noteId);
@@ -323,11 +314,11 @@
             deleteNoteId = null;
         }
 
-        function confirmDeleteNote() {
+        async function confirmDeleteNote() {
             if (deleteNoteId && currentClassId) {
                 const classObj = classes.find(c => c.id === currentClassId);
                 classObj.notes = classObj.notes.filter(n => n.id !== deleteNoteId);
-                saveData();
+                await saveClasses();
                 showNotesView(classObj);
                 closeDeleteNoteModal();
             }
@@ -343,13 +334,15 @@
                             <button onclick="backToNotesList()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium">
                                 ← Back
                             </button>
+                            <button id="transcribeButton" onclick="toggleTranscription()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium">
+                                🎙️ Start Transcription
+                            </button>
                             <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                         </div>
                     </div>
                     
                     <div class="flex-1 p-4">
                         <div class="cornell-grid h-full">
-                            <!-- Header -->
                             <div class="header-section bg-white p-4">
                                 <input type="text" id="noteTitle" placeholder="Note title..." value="${note.title || ''}"
                                        class="w-full text-lg font-medium border-none outline-none bg-transparent">
@@ -357,7 +350,6 @@
                                        class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
                             </div>
                             
-                            <!-- Cue Column -->
                             <div class="cue-column bg-white p-4">
                                 <div class="flex justify-between items-center mb-3">
                                     <h4 class="font-medium text-gray-700">Cues & Questions</h4>
@@ -376,7 +368,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Notes Column -->
                             <div class="notes-column bg-white p-4">
                                 <div class="flex justify-between items-center mb-3">
                                     <h4 class="font-medium text-gray-700">Notes</h4>
@@ -395,7 +386,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Summary Section -->
                             <div class="summary-section bg-white p-4">
                                 <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
                                 <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
@@ -409,8 +399,8 @@
             currentNoteId = note.id;
         }
 
-        function backToNotesList() {
-            saveCurrentNote();
+        async function backToNotesList() {
+            await saveCurrentNote();
             const classObj = classes.find(c => c.id === currentClassId);
             showNotesView(classObj);
         }
@@ -451,7 +441,7 @@
             }
         }
 
-        function saveCurrentNote() {
+        async function saveCurrentNote() {
             if (!currentClassId || !currentNoteId) return;
 
             const classObj = classes.find(c => c.id === currentClassId);
@@ -478,12 +468,15 @@
                 note.notes = Array.from(noteInputs).map(input => input.value).filter(v => v.trim());
             }
 
-            saveData();
+            await saveClasses();
         }
 
-        function renderClasses() {
+        async function renderClasses() {
             const grid = document.getElementById('classesGrid');
             const emptyState = document.getElementById('emptyState');
+            
+            const loadedClasses = await localforage.getItem('cornellClasses');
+            classes = loadedClasses || [];
 
             if (classes.length === 0) {
                 grid.style.display = 'none';
@@ -546,6 +539,109 @@
                 saveClass();
             }
         });
+
+        // Speech Recognition Functions
+        function toggleTranscription() {
+            const transcribeButton = document.getElementById('transcribeButton');
+
+            if (isTranscribing) {
+                // Stop transcription
+                recognition.stop();
+                isTranscribing = false;
+                transcribeButton.textContent = '🎙️ Start Transcription';
+                transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
+            } else {
+                // Check for browser support
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("Your browser does not support the Web Speech API. Please try Google Chrome or Microsoft Edge.");
+                    return;
+                }
+
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                let finalTranscript = '';
+
+                recognition.onstart = () => {
+                    isTranscribing = true;
+                    transcribeButton.textContent = '⏹️ Stop Transcription';
+                    transcribeButton.classList.replace('bg-purple-600', 'bg-red-600');
+                };
+
+                recognition.onresult = event => {
+                    let interimTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    // Append the new text to a temporary text area for a smooth experience
+                    const notesContent = document.getElementById('notesContent');
+                    let tempInput = document.getElementById('interimTranscription');
+                    if (!tempInput) {
+                        tempInput = document.createElement('input');
+                        tempInput.id = 'interimTranscription';
+                        tempInput.type = 'text';
+                        tempInput.readOnly = true;
+                        tempInput.className = 'flex-1 border-none outline-none bg-transparent text-gray-400 italic';
+                        const bullet = document.createElement('div');
+                        bullet.className = 'flex items-start gap-2';
+                        bullet.innerHTML = `<span class="text-gray-600 mt-1">•</span>`;
+                        bullet.appendChild(tempInput);
+                        notesContent.appendChild(bullet);
+                    }
+                    tempInput.value = finalTranscript + interimTranscript;
+                };
+
+                recognition.onend = async () => {
+                    // When transcription ends, remove the interim input and save the final text
+                    const notesContent = document.getElementById('notesContent');
+                    const tempInput = document.getElementById('interimTranscription');
+                    if (tempInput && finalTranscript.trim() !== '') {
+                        const newNoteText = finalTranscript.trim();
+                        tempInput.parentNode.remove();
+                        addNoteBulletWithText(newNoteText);
+                        await saveCurrentNote();
+                    } else if (tempInput) {
+                        tempInput.parentNode.remove();
+                    }
+                    isTranscribing = false;
+                    transcribeButton.textContent = '🎙️ Start Transcription';
+                    transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
+                };
+
+                recognition.onerror = event => {
+                    console.error('Speech recognition error:', event.error);
+                    alert(`Speech recognition error: ${event.error}`);
+                    isTranscribing = false;
+                    transcribeButton.textContent = '🎙️ Start Transcription';
+                    transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
+                };
+
+                recognition.start();
+            }
+        }
+
+        function addNoteBulletWithText(text) {
+            const notesContent = document.getElementById('notesContent');
+            const bullet = document.createElement('div');
+            bullet.className = 'flex items-start gap-2';
+            bullet.innerHTML = `
+                <span class="text-gray-600 mt-1">•</span>
+                <input type="text" value="${text}" 
+                       class="flex-1 border-none outline-none bg-transparent" 
+                       onchange="autoSave()">
+                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
+            `;
+            notesContent.appendChild(bullet);
+            bullet.querySelector('input').focus();
+        }
 
         // PDF Export Functions
         function exportClassToPDF() {
@@ -624,8 +720,8 @@
                     doc.text('Summary:', 20, yPosition);
                     yPosition += 8;
                     
-                    doc.setFontSize(10);
                     const summaryLines = doc.splitTextToSize(note.summary, 170);
+                    doc.setFontSize(10);
                     summaryLines.forEach(line => {
                         if (yPosition > 270) {
                             doc.addPage();
@@ -733,7 +829,9 @@
         }
 
         // Initial render
-        renderClasses();
+        (async () => {
+            await renderClasses();
+        })();
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d3843e32899fb',t:'MTc1NjE0NzI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
