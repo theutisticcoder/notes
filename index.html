@@ -467,10 +467,10 @@
             const noteInputs = document.querySelectorAll('#notesContent');
 
             if (cueInputs.length > 0) {
-                note.cues = Array.from(cueInputs).map(input => input.value).filter(v => v.trim());
+                note.cues = Array.from(cueInputs).map(input => input.innerText).filter(v => v.trim());
             }
             if (noteInputs.length > 0) {
-                note.notes = Array.from(noteInputs).map(input => input.value).filter(v => v.trim());
+                note.notes = Array.from(noteInputs).map(input => input.innerText).filter(v => v.trim());
             }
 
             await saveClasses();
