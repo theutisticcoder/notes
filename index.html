@@ -18,15 +18,10 @@
             background: #e5e7eb;
             min-height: 400px;
         }
-        
         .cue-column { grid-column: 1; grid-row: 2; }
         .notes-column { grid-column: 2; grid-row: 2; }
         .summary-section { grid-column: 1 / -1; grid-row: 3; }
         .header-section { grid-column: 1 / -1; grid-row: 1; }
-        textarea{
-            height: auto;
-            overflow-y: visible;
-        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -364,9 +359,9 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <textarea id="cue" type="text" 
+                                            <textarea type="text" value="${cue}"
                                                    class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()">${cue}</textarea>
+                                                   onchange="autoSave()"></textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -382,9 +377,9 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea id="note" type="text"  
+                                            <textarea type="text" value="${noteText}" 
                                                    class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()">${noteText}</textarea>
+                                                   onchange="autoSave()"></textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -416,9 +411,9 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-blue-600 mt-1">•</span>
-                <textarea type="text" placeholder="Add a cue or question..." 
+                <input type="text" placeholder="Add a cue or question..." 
                        class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()"></textarea>
+                       onchange="autoSave()">
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             cueContent.appendChild(bullet);
@@ -431,9 +426,9 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <textarea type="text" placeholder="Add a note..." 
+                <input type="text" placeholder="Add a note..." 
                        class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()"></textarea>
+                       onchange="autoSave()">
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             notesContent.appendChild(bullet);
@@ -459,18 +454,18 @@
             const dateEl = document.getElementById('noteDate');
             const summaryEl = document.getElementById('summaryContent');
 
-            if (titleEl) note.title = titleEl.innerHTML;
-            if (dateEl) note.date = dateEl.innerHTML;
-            if (summaryEl) note.summary = summaryEl.innerHTML;
+            if (titleEl) note.title = titleEl.value;
+            if (dateEl) note.date = dateEl.value;
+            if (summaryEl) note.summary = summaryEl.value;
 
-            const cueInputs = document.querySelectorAll('#cue');
-            const noteInputs = document.querySelectorAll('#note');
+            const cueInputs = document.querySelectorAll('#cueContent textarea');
+            const noteInputs = document.querySelectorAll('#notesContent textarea');
 
             if (cueInputs.length > 0) {
-                note.cues = Array.from(cueInputs).map(input => input.innerHTML)
+                note.cues = Array.from(cueInputs).map(input => input.value).filter(v => v.trim());
             }
             if (noteInputs.length > 0) {
-                note.notes = Array.from(noteInputs).map(input => input.innerHTML)
+                note.notes = Array.from(noteInputs).map(input => input.value).filter(v => v.trim());
             }
 
             await saveClasses();
@@ -639,9 +634,9 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <textarea type="text" 
+                <input type="text" value="${text}" 
                        class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()">${text}</textarea>
+                       onchange="autoSave()">
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             notesContent.appendChild(bullet);
