@@ -63,6 +63,38 @@
         </div>
     </div>
 
+    <!-- Delete Class Modal -->
+    <div id="deleteClassModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-96 mx-4">
+            <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Class</h3>
+            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteClassName"></span>" and all its notes? This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmDeleteClass()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
+                    Delete Class
+                </button>
+                <button onclick="closeDeleteClassModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Note Modal -->
+    <div id="deleteNoteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-96 mx-4">
+            <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Note</h3>
+            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteNoteName"></span>"? This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmDeleteNote()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
+                    Delete Note
+                </button>
+                <button onclick="closeDeleteNoteModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Note Taking Modal -->
     <div id="noteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
@@ -118,6 +150,8 @@
         let classes = JSON.parse(localStorage.getItem('cornellClasses') || '[]');
         let currentClassId = null;
         let currentNoteId = null;
+        let deleteClassId = null;
+        let deleteNoteId = null;
 
         function saveData() {
             localStorage.setItem('cornellClasses', JSON.stringify(classes));
@@ -152,10 +186,25 @@
         }
 
         function deleteClass(classId) {
-            if (confirm('Are you sure you want to delete this class and all its notes?')) {
-                classes = classes.filter(c => c.id !== classId);
+            deleteClassId = classId;
+            const classObj = classes.find(c => c.id === classId);
+            document.getElementById('deleteClassName').textContent = classObj.name;
+            document.getElementById('deleteClassModal').classList.remove('hidden');
+            document.getElementById('deleteClassModal').classList.add('flex');
+        }
+
+        function closeDeleteClassModal() {
+            document.getElementById('deleteClassModal').classList.add('hidden');
+            document.getElementById('deleteClassModal').classList.remove('flex');
+            deleteClassId = null;
+        }
+
+        function confirmDeleteClass() {
+            if (deleteClassId) {
+                classes = classes.filter(c => c.id !== deleteClassId);
                 saveData();
                 renderClasses();
+                closeDeleteClassModal();
             }
         }
 
@@ -260,11 +309,27 @@
         }
 
         function deleteNote(noteId) {
-            if (confirm('Are you sure you want to delete this note?')) {
+            deleteNoteId = noteId;
+            const classObj = classes.find(c => c.id === currentClassId);
+            const note = classObj.notes.find(n => n.id === noteId);
+            document.getElementById('deleteNoteName').textContent = note.title || 'Untitled Note';
+            document.getElementById('deleteNoteModal').classList.remove('hidden');
+            document.getElementById('deleteNoteModal').classList.add('flex');
+        }
+
+        function closeDeleteNoteModal() {
+            document.getElementById('deleteNoteModal').classList.add('hidden');
+            document.getElementById('deleteNoteModal').classList.remove('flex');
+            deleteNoteId = null;
+        }
+
+        function confirmDeleteNote() {
+            if (deleteNoteId && currentClassId) {
                 const classObj = classes.find(c => c.id === currentClassId);
-                classObj.notes = classObj.notes.filter(n => n.id !== noteId);
+                classObj.notes = classObj.notes.filter(n => n.id !== deleteNoteId);
                 saveData();
                 showNotesView(classObj);
+                closeDeleteNoteModal();
             }
         }
 
@@ -670,5 +735,5 @@
         // Initial render
         renderClasses();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d313151401216',t:'MTc1NjE0Njk1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d3843e32899fb',t:'MTc1NjE0NzI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
