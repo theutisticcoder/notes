@@ -359,9 +359,7 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <textarea type="text" value="${cue}"
-                                                   class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()"></textarea>
+                                            <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -377,9 +375,7 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea type="text" value="${noteText}" 
-                                                   class="flex-1 border-none outline-none bg-transparent" 
-                                                   onchange="autoSave()"></textarea>
+                                            <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -411,13 +407,13 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-blue-600 mt-1">•</span>
-                <input type="text" placeholder="Add a cue or question..." 
+                <textarea placeholder="Add a cue or question..." 
                        class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()">
+                       onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             cueContent.appendChild(bullet);
-            bullet.querySelector('input').focus();
+            bullet.querySelector('textarea').focus();
         }
 
         function addNoteBullet() {
@@ -426,13 +422,13 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <input type="text" placeholder="Add a note..." 
+                <textarea placeholder="Add a note..." 
                        class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()">
+                       onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             notesContent.appendChild(bullet);
-            bullet.querySelector('input').focus();
+            bullet.querySelector('textarea').focus();
         }
 
         function autoSave() {
@@ -458,14 +454,14 @@
             if (dateEl) note.date = dateEl.value;
             if (summaryEl) note.summary = summaryEl.value;
 
-            const cueInputs = document.querySelectorAll('#cueContent textarea');
-            const noteInputs = document.querySelectorAll('#notesContent textarea');
+            const cueTextareas = document.querySelectorAll('#cueContent textarea');
+            const noteTextareas = document.querySelectorAll('#notesContent textarea');
 
-            if (cueInputs.length > 0) {
-                note.cues = Array.from(cueInputs).map(input => input.innerHTML).filter(v => v.trim());
+            if (cueTextareas.length > 0) {
+                note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-            if (noteInputs.length > 0) {
-                note.notes = Array.from(noteInputs).map(input => input.inerHTML).filter(v => v.trim());
+            if (noteTextareas.length > 0) {
+                note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
 
             await saveClasses();
@@ -585,9 +581,8 @@
                     const notesContent = document.getElementById('notesContent');
                     let tempInput = document.getElementById('interimTranscription');
                     if (!tempInput) {
-                        tempInput = document.createElement('input');
+                        tempInput = document.createElement('textarea');
                         tempInput.id = 'interimTranscription';
-                        tempInput.type = 'text';
                         tempInput.readOnly = true;
                         tempInput.className = 'flex-1 border-none outline-none bg-transparent text-gray-400 italic';
                         const bullet = document.createElement('div');
@@ -634,13 +629,11 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <input type="text" value="${text}" 
-                       class="flex-1 border-none outline-none bg-transparent" 
-                       onchange="autoSave()">
+                <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${text}</textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             notesContent.appendChild(bullet);
-            bullet.querySelector('input').focus();
+            bullet.querySelector('textarea').focus();
         }
 
         // PDF Export Functions
