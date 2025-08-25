@@ -1,4 +1,11 @@
-body {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cornell Notes</title>
+    <style>
+        body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
     color: #333;
@@ -160,3 +167,171 @@ ul.bullet-list {
     list-style-type: disc;
     padding-left: 20px;
 }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Classes</h2>
+            <ul id="classList"></ul>
+            <button id="addClassBtn">Add Class</button>
+        </div>
+        <div class="note-area">
+            <div class="toolbar">
+                <button id="addNoteBtn">Add Note</button>
+            </div>
+            <div id="notesGrid" class="notes-grid"></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const classList = document.getElementById('classList');
+    const addClassBtn = document.getElementById('addClassBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const notesGrid = document.getElementById('notesGrid');
+
+    let classes = JSON.parse(localStorage.getItem('classes')) || [];
+    let notes = JSON.parse(localStorage.getItem('notes')) || {};
+    let currentClass = classes[0] || null;
+
+    function saveToLocalStorage() {
+        localStorage.setItem('classes', JSON.stringify(classes));
+        localStorage.setItem('notes', JSON.stringify(notes));
+    }
+
+    function renderClasses() {
+        classList.innerHTML = '';
+        classes.forEach(cls => {
+            const li = document.createElement('li');
+            li.textContent = cls;
+            if (cls === currentClass) {
+                li.classList.add('selected-class');
+            }
+            li.addEventListener('click', () => {
+                currentClass = cls;
+                renderClasses();
+                renderNotes();
+            });
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '❌';
+            deleteBtn.classList.add('delete-class-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm(`Are you sure you want to delete the class "${cls}" and all its notes?`)) {
+                    delete notes[cls];
+                    classes = classes.filter(c => c !== cls);
+                    if (currentClass === cls) {
+                        currentClass = classes[0] || null;
+                    }
+                    saveToLocalStorage();
+                    renderClasses();
+                    renderNotes();
+                }
+            });
+            li.appendChild(deleteBtn);
+            classList.appendChild(li);
+        });
+    }
+
+    function renderNotes() {
+        notesGrid.innerHTML = '';
+        if (!currentClass) {
+            notesGrid.textContent = 'Please add a class to get started.';
+            return;
+        }
+        if (!notes[currentClass]) {
+            notes[currentClass] = [];
+        }
+        notes[currentClass].forEach((note, index) => {
+            const noteCard = document.createElement('div');
+            noteCard.classList.add('note-card');
+            noteCard.innerHTML = `
+                <h3>
+                    <span contenteditable="true" class="note-title">${note.title}</span>
+                    <button class="delete-note-btn" data-index="${index}">❌</button>
+                </h3>
+                <div class="cornell-grid">
+                    <div class="cues" contenteditable="true" data-type="cues">
+                        ${note.cues}
+                    </div>
+                    <div class="notes" contenteditable="true" data-type="notes">
+                        ${note.notes}
+                    </div>
+                </div>
+                <div class="summary" contenteditable="true" data-type="summary">
+                    ${note.summary}
+                </div>
+            `;
+            notesGrid.appendChild(noteCard);
+        });
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('[contenteditable="true"]').forEach(element => {
+            element.addEventListener('input', (e) => {
+                const noteCard = e.target.closest('.note-card');
+                const noteIndex = Array.from(notesGrid.children).indexOf(noteCard);
+                const type = e.target.dataset.type;
+                const titleElement = noteCard.querySelector('.note-title');
+                
+                if (type) {
+                    notes[currentClass][noteIndex][type] = e.target.innerHTML;
+                } else if (e.target.classList.contains('note-title')) {
+                    notes[currentClass][noteIndex].title = e.target.textContent;
+                }
+                saveToLocalStorage();
+            });
+
+            element.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                document.execCommand('insertText', false, text);
+            });
+        });
+
+        notesGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-note-btn')) {
+                const index = e.target.dataset.index;
+                notes[currentClass].splice(index, 1);
+                saveToLocalStorage();
+                renderNotes();
+            }
+        });
+    }
+
+    addClassBtn.addEventListener('click', () => {
+        const className = prompt('Enter a new class name:');
+        if (className && !classes.includes(className)) {
+            classes.push(className);
+            notes[className] = [];
+            currentClass = className;
+            saveToLocalStorage();
+            renderClasses();
+            renderNotes();
+        }
+    });
+
+    addNoteBtn.addEventListener('click', () => {
+        if (!currentClass) {
+            alert('Please add a class first.');
+            return;
+        }
+        const newNote = {
+            title: 'New Note',
+            cues: '<h4>Cues & Questions</h4>',
+            notes: '<h4>Notes</h4><ul class="bullet-list"><li>Start typing...</li></ul>',
+            summary: '<h4>Summary</h4>'
+        };
+        notes[currentClass].push(newNote);
+        saveToLocalStorage();
+        renderNotes();
+    });
+
+    // Initial render
+    renderClasses();
+    renderNotes();
+});
+    </script>
+</body>
+</html>
