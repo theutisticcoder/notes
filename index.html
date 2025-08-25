@@ -3,335 +3,672 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornell Notes</title>
+    <title>Cornell Notes App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 20px;
-    height: 95vh;
-}
-
-.sidebar {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-#classList {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 10px;
-    flex-grow: 1;
-}
-
-#classList li {
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-bottom: 5px;
-    transition: background-color 0.2s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#classList li:hover {
-    background-color: #e9e9e9;
-}
-
-.selected-class {
-    background-color: #007bff !important;
-    color: #fff;
-}
-
-.delete-class-btn {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button {
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s ease;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.note-area {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-.toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-.notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    overflow-y: auto;
-}
-
-.note-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.note-card h3 {
-    margin: 0;
-    font-size: 1.2em;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.note-card .cornell-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    height: 100%;
-}
-
-.note-card .cues, .note-card .notes, .note-card .summary {
-    border: 1px solid #eee;
-    padding: 10px;
-    border-radius: 4px;
-    min-height: 100px;
-    position: relative;
-}
-
-.note-card .cues {
-    border-right: 1px solid #ddd;
-}
-
-.note-card .notes {
-    border-left: none;
-}
-
-.note-card .summary {
-    grid-column: 1 / 3;
-    border-top: 1px solid #ddd;
-}
-
-.delete-note-btn {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-[contenteditable="true"]:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-ul.bullet-list {
-    list-style-type: disc;
-    padding-left: 20px;
-}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .cornell-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 1px;
+            background: #e5e7eb;
+            min-height: 400px;
+        }
+        .cue-column { grid-column: 1; grid-row: 2; }
+        .notes-column { grid-column: 2; grid-row: 2; }
+        .summary-section { grid-column: 1 / -1; grid-row: 3; }
+        .header-section { grid-column: 1 / -1; grid-row: 1; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="sidebar">
-            <h2>Classes</h2>
-            <ul id="classList"></ul>
-            <button id="addClassBtn">Add Class</button>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Cornell Notes</h1>
+            <button onclick="addClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                + Add Class
+            </button>
         </div>
-        <div class="note-area">
-            <div class="toolbar">
-                <button id="addNoteBtn">Add Note</button>
-            </div>
-            <div id="notesGrid" class="notes-grid"></div>
+
+        <!-- Classes Grid -->
+        <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Classes will be dynamically added here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-12 text-gray-500">
+            <div class="text-6xl mb-4">📚</div>
+            <h3 class="text-xl font-medium mb-2">No classes yet</h3>
+            <p>Click "Add Class" to create your first Cornell notes</p>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-    const classList = document.getElementById('classList');
-    const addClassBtn = document.getElementById('addClassBtn');
-    const addNoteBtn = document.getElementById('addNoteBtn');
-    const notesGrid = document.getElementById('notesGrid');
 
-    let classes = JSON.parse(localStorage.getItem('classes')) || [];
-    let notes = JSON.parse(localStorage.getItem('notes')) || {};
-    let currentClass = classes[0] || null;
+    <!-- Add Class Modal -->
+    <div id="classModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-96 mx-4">
+            <h3 class="text-lg font-semibold mb-4">Add New Class</h3>
+            <input type="text" id="classNameInput" placeholder="Class name (e.g., Biology 101)" 
+                   class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <div class="flex gap-3">
+                <button onclick="saveClass()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
+                    Create Class
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
-    function saveToLocalStorage() {
-        localStorage.setItem('classes', JSON.stringify(classes));
-        localStorage.setItem('notes', JSON.stringify(notes));
-    }
-
-    function renderClasses() {
-        classList.innerHTML = '';
-        classes.forEach(cls => {
-            const li = document.createElement('li');
-            li.textContent = cls;
-            if (cls === currentClass) {
-                li.classList.add('selected-class');
-            }
-            li.addEventListener('click', () => {
-                currentClass = cls;
-                renderClasses();
-                renderNotes();
-            });
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '❌';
-            deleteBtn.classList.add('delete-class-btn');
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (confirm(`Are you sure you want to delete the class "${cls}" and all its notes?`)) {
-                    delete notes[cls];
-                    classes = classes.filter(c => c !== cls);
-                    if (currentClass === cls) {
-                        currentClass = classes[0] || null;
-                    }
-                    saveToLocalStorage();
-                    renderClasses();
-                    renderNotes();
-                }
-            });
-            li.appendChild(deleteBtn);
-            classList.appendChild(li);
-        });
-    }
-
-    function renderNotes() {
-        notesGrid.innerHTML = '';
-        if (!currentClass) {
-            notesGrid.textContent = 'Please add a class to get started.';
-            return;
-        }
-        if (!notes[currentClass]) {
-            notes[currentClass] = [];
-        }
-        notes[currentClass].forEach((note, index) => {
-            const noteCard = document.createElement('div');
-            noteCard.classList.add('note-card');
-            noteCard.innerHTML = `
-                <h3>
-                    <span contenteditable="true" class="note-title">${note.title}</span>
-                    <button class="delete-note-btn" data-index="${index}">❌</button>
-                </h3>
-                <div class="cornell-grid">
-                    <div class="cues" contenteditable="true" data-type="cues">
-                        ${note.cues}
+    <!-- Note Taking Modal -->
+    <div id="noteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="noteModalTitle" class="text-lg font-semibold">Taking Notes</h3>
+                <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            <div class="flex-1 p-4">
+                <div class="cornell-grid h-full">
+                    <!-- Header -->
+                    <div class="header-section bg-white p-4">
+                        <input type="text" id="noteTitle" placeholder="Note title..." 
+                               class="w-full text-lg font-medium border-none outline-none bg-transparent">
+                        <input type="text" id="noteDate" placeholder="Date..." 
+                               class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
                     </div>
-                    <div class="notes" contenteditable="true" data-type="notes">
-                        ${note.notes}
+                    
+                    <!-- Cue Column -->
+                    <div class="cue-column bg-white p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-medium text-gray-700">Cues & Questions</h4>
+                            <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                        </div>
+                        <div id="cueContent" class="space-y-2">
+                            <!-- Cue bullets will be added here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Column -->
+                    <div class="notes-column bg-white p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-medium text-gray-700">Notes</h4>
+                            <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                        </div>
+                        <div id="notesContent" class="space-y-2">
+                            <!-- Note bullets will be added here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Section -->
+                    <div class="summary-section bg-white p-4">
+                        <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
+                        <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
+                                  class="w-full h-20 resize-none border-none outline-none bg-transparent"></textarea>
                     </div>
                 </div>
-                <div class="summary" contenteditable="true" data-type="summary">
-                    ${note.summary}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let classes = JSON.parse(localStorage.getItem('cornellClasses') || '[]');
+        let currentClassId = null;
+        let currentNoteId = null;
+
+        function saveData() {
+            localStorage.setItem('cornellClasses', JSON.stringify(classes));
+        }
+
+        function addClass() {
+            document.getElementById('classModal').classList.remove('hidden');
+            document.getElementById('classModal').classList.add('flex');
+            document.getElementById('classNameInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('classModal').classList.add('hidden');
+            document.getElementById('classModal').classList.remove('flex');
+            document.getElementById('classNameInput').value = '';
+        }
+
+        function saveClass() {
+            const className = document.getElementById('classNameInput').value.trim();
+            if (!className) return;
+
+            const newClass = {
+                id: Date.now(),
+                name: className,
+                notes: []
+            };
+
+            classes.push(newClass);
+            saveData();
+            renderClasses();
+            closeModal();
+        }
+
+        function deleteClass(classId) {
+            if (confirm('Are you sure you want to delete this class and all its notes?')) {
+                classes = classes.filter(c => c.id !== classId);
+                saveData();
+                renderClasses();
+            }
+        }
+
+        function openNotes(classId) {
+            currentClassId = classId;
+            const classObj = classes.find(c => c.id === classId);
+            showNotesView(classObj);
+        }
+
+        function showNotesView(classObj) {
+            const noteModal = document.getElementById('noteModal');
+            noteModal.innerHTML = `
+                <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">${classObj.name} - Notes</h3>
+                        <div class="flex gap-2">
+                            <button onclick="exportClassToPDF()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                                📄 Export PDF
+                            </button>
+                            <button onclick="createNewNote()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                                + New Note
+                            </button>
+                            <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 p-4 overflow-y-auto">
+                        <div id="notesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${renderNotesList(classObj)}
+                        </div>
+                        
+                        <div id="emptyNotes" class="text-center py-12 text-gray-500 ${classObj.notes && classObj.notes.length > 0 ? 'hidden' : ''}">
+                            <div class="text-4xl mb-4">📝</div>
+                            <h3 class="text-lg font-medium mb-2">No notes yet</h3>
+                            <p>Click "New Note" to create your first Cornell note</p>
+                        </div>
+                    </div>
                 </div>
             `;
-            notesGrid.appendChild(noteCard);
-        });
-        setupEventListeners();
-    }
+            
+            noteModal.classList.remove('hidden');
+            noteModal.classList.add('flex');
+        }
 
-    function setupEventListeners() {
-        document.querySelectorAll('[contenteditable="true"]').forEach(element => {
-            element.addEventListener('input', (e) => {
-                const noteCard = e.target.closest('.note-card');
-                const noteIndex = Array.from(notesGrid.children).indexOf(noteCard);
-                const type = e.target.dataset.type;
-                const titleElement = noteCard.querySelector('.note-title');
-                
-                if (type) {
-                    notes[currentClass][noteIndex][type] = e.target.innerHTML;
-                } else if (e.target.classList.contains('note-title')) {
-                    notes[currentClass][noteIndex].title = e.target.textContent;
-                }
-                saveToLocalStorage();
-            });
+        function renderNotesList(classObj) {
+            if (!classObj.notes || classObj.notes.length === 0) return '';
+            
+            return classObj.notes.map(note => `
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-medium text-gray-800 truncate">${note.title || 'Untitled Note'}</h4>
+                        <button onclick="event.stopPropagation(); deleteNote(${note.id})" class="text-gray-400 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 102 0v3a1 1 0 11-2 0V9zm4 0a1 1 0 10-2 0v3a1 1 0 102 0V9z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${note.date || ''}</p>
+                    <div class="text-xs text-gray-500 mb-3">
+                        ${note.cues ? note.cues.length : 0} cues • ${note.notes ? note.notes.length : 0} notes
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editNote(${note.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm font-medium">
+                            Open Note
+                        </button>
+                        <button onclick="event.stopPropagation(); exportNoteToPDF(${note.id})" class="bg-green-600 hover:bg-green-700 text-white py-2 px-2 rounded text-sm font-medium" title="Export to PDF">
+                            📄
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            element.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-                document.execCommand('insertText', false, text);
-            });
-        });
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.add('hidden');
+            document.getElementById('noteModal').classList.remove('flex');
+        }
 
-        notesGrid.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-note-btn')) {
-                const index = e.target.dataset.index;
-                notes[currentClass].splice(index, 1);
-                saveToLocalStorage();
-                renderNotes();
+        function createNewNote() {
+            const newNote = {
+                id: Date.now(),
+                title: '',
+                date: new Date().toLocaleDateString(),
+                cues: [],
+                notes: [],
+                summary: ''
+            };
+            
+            const classObj = classes.find(c => c.id === currentClassId);
+            if (!classObj.notes) classObj.notes = [];
+            classObj.notes.push(newNote);
+            saveData();
+            
+            editNote(newNote.id);
+        }
+
+        function editNote(noteId) {
+            const classObj = classes.find(c => c.id === currentClassId);
+            const note = classObj.notes.find(n => n.id === noteId);
+            
+            showNoteEditor(note);
+        }
+
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                const classObj = classes.find(c => c.id === currentClassId);
+                classObj.notes = classObj.notes.filter(n => n.id !== noteId);
+                saveData();
+                showNotesView(classObj);
+            }
+        }
+
+        function showNoteEditor(note) {
+            const noteModal = document.getElementById('noteModal');
+            noteModal.innerHTML = `
+                <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">Editing Note</h3>
+                        <div class="flex gap-2">
+                            <button onclick="backToNotesList()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium">
+                                ← Back
+                            </button>
+                            <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 p-4">
+                        <div class="cornell-grid h-full">
+                            <!-- Header -->
+                            <div class="header-section bg-white p-4">
+                                <input type="text" id="noteTitle" placeholder="Note title..." value="${note.title || ''}"
+                                       class="w-full text-lg font-medium border-none outline-none bg-transparent">
+                                <input type="text" id="noteDate" placeholder="Date..." value="${note.date || ''}"
+                                       class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
+                            </div>
+                            
+                            <!-- Cue Column -->
+                            <div class="cue-column bg-white p-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-medium text-gray-700">Cues & Questions</h4>
+                                    <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                                </div>
+                                <div id="cueContent" class="space-y-2">
+                                    ${note.cues.map(cue => `
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-blue-600 mt-1">•</span>
+                                            <input type="text" value="${cue}" 
+                                                   class="flex-1 border-none outline-none bg-transparent" 
+                                                   onchange="autoSave()">
+                                            <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <!-- Notes Column -->
+                            <div class="notes-column bg-white p-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-medium text-gray-700">Notes</h4>
+                                    <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                                </div>
+                                <div id="notesContent" class="space-y-2">
+                                    ${note.notes.map(noteText => `
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-gray-600 mt-1">•</span>
+                                            <input type="text" value="${noteText}" 
+                                                   class="flex-1 border-none outline-none bg-transparent" 
+                                                   onchange="autoSave()">
+                                            <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <!-- Summary Section -->
+                            <div class="summary-section bg-white p-4">
+                                <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
+                                <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
+                                          class="w-full h-20 resize-none border-none outline-none bg-transparent">${note.summary || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            currentNoteId = note.id;
+        }
+
+        function backToNotesList() {
+            saveCurrentNote();
+            const classObj = classes.find(c => c.id === currentClassId);
+            showNotesView(classObj);
+        }
+
+        function addCueBullet() {
+            const cueContent = document.getElementById('cueContent');
+            const bullet = document.createElement('div');
+            bullet.className = 'flex items-start gap-2';
+            bullet.innerHTML = `
+                <span class="text-blue-600 mt-1">•</span>
+                <input type="text" placeholder="Add a cue or question..." 
+                       class="flex-1 border-none outline-none bg-transparent" 
+                       onchange="autoSave()">
+                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
+            `;
+            cueContent.appendChild(bullet);
+            bullet.querySelector('input').focus();
+        }
+
+        function addNoteBullet() {
+            const notesContent = document.getElementById('notesContent');
+            const bullet = document.createElement('div');
+            bullet.className = 'flex items-start gap-2';
+            bullet.innerHTML = `
+                <span class="text-gray-600 mt-1">•</span>
+                <input type="text" placeholder="Add a note..." 
+                       class="flex-1 border-none outline-none bg-transparent" 
+                       onchange="autoSave()">
+                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
+            `;
+            notesContent.appendChild(bullet);
+            bullet.querySelector('input').focus();
+        }
+
+        function autoSave() {
+            if (currentClassId) {
+                setTimeout(saveCurrentNote, 100);
+            }
+        }
+
+        function saveCurrentNote() {
+            if (!currentClassId || !currentNoteId) return;
+
+            const classObj = classes.find(c => c.id === currentClassId);
+            if (!classObj) return;
+
+            const note = classObj.notes.find(n => n.id === currentNoteId);
+            if (!note) return;
+
+            const titleEl = document.getElementById('noteTitle');
+            const dateEl = document.getElementById('noteDate');
+            const summaryEl = document.getElementById('summaryContent');
+
+            if (titleEl) note.title = titleEl.value;
+            if (dateEl) note.date = dateEl.value;
+            if (summaryEl) note.summary = summaryEl.value;
+
+            const cueInputs = document.querySelectorAll('#cueContent input');
+            const noteInputs = document.querySelectorAll('#notesContent input');
+
+            if (cueInputs.length > 0) {
+                note.cues = Array.from(cueInputs).map(input => input.value).filter(v => v.trim());
+            }
+            if (noteInputs.length > 0) {
+                note.notes = Array.from(noteInputs).map(input => input.value).filter(v => v.trim());
+            }
+
+            saveData();
+        }
+
+        function renderClasses() {
+            const grid = document.getElementById('classesGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (classes.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = classes.map(classObj => `
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">${classObj.name}</h3>
+                        <button onclick="event.stopPropagation(); deleteClass(${classObj.id})" 
+                                class="text-gray-400 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 102 0v3a1 1 0 11-2 0V9zm4 0a1 1 0 10-2 0v3a1 1 0 102 0V9z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 mb-4">
+                        ${classObj.notes && classObj.notes.length > 0 ? 
+                            `<div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                ${classObj.notes.length} note${classObj.notes.length === 1 ? '' : 's'}
+                            </div>` : 
+                            `<div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-gray-300 rounded-full"></span>
+                                No notes yet
+                            </div>`
+                        }
+                    </div>
+                    
+                    <button onclick="openNotes(${classObj.id})" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+                        Open Notes
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Auto-save on input changes
+        document.addEventListener('input', (e) => {
+            if (e.target.closest('#noteModal')) {
+                autoSave();
             }
         });
-    }
 
-    addClassBtn.addEventListener('click', () => {
-        const className = prompt('Enter a new class name:');
-        if (className && !classes.includes(className)) {
-            classes.push(className);
-            notes[className] = [];
-            currentClass = className;
-            saveToLocalStorage();
-            renderClasses();
-            renderNotes();
+        // Handle Enter key for adding bullets
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.closest('#cueContent')) {
+                e.preventDefault();
+                addCueBullet();
+            } else if (e.key === 'Enter' && e.target.closest('#notesContent')) {
+                e.preventDefault();
+                addNoteBullet();
+            } else if (e.key === 'Enter' && e.target.id === 'classNameInput') {
+                saveClass();
+            }
+        });
+
+        // PDF Export Functions
+        function exportClassToPDF() {
+            const classObj = classes.find(c => c.id === currentClassId);
+            if (!classObj || !classObj.notes || classObj.notes.length === 0) {
+                alert('No notes to export in this class.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title page
+            doc.setFontSize(20);
+            doc.text(classObj.name, 20, 30);
+            doc.setFontSize(12);
+            doc.text(`Exported on: ${new Date().toLocaleDateString()}`, 20, 45);
+            doc.text(`Total Notes: ${classObj.notes.length}`, 20, 55);
+            
+            let yPosition = 80;
+            
+            classObj.notes.forEach((note, index) => {
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                // Note header
+                doc.setFontSize(16);
+                doc.text(`${index + 1}. ${note.title || 'Untitled Note'}`, 20, yPosition);
+                yPosition += 10;
+                
+                doc.setFontSize(10);
+                doc.text(`Date: ${note.date || 'No date'}`, 20, yPosition);
+                yPosition += 15;
+                
+                // Cues section
+                if (note.cues && note.cues.length > 0) {
+                    doc.setFontSize(12);
+                    doc.text('Cues & Questions:', 20, yPosition);
+                    yPosition += 8;
+                    
+                    doc.setFontSize(10);
+                    note.cues.forEach(cue => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        doc.text(`• ${cue}`, 25, yPosition);
+                        yPosition += 6;
+                    });
+                    yPosition += 5;
+                }
+                
+                // Notes section
+                if (note.notes && note.notes.length > 0) {
+                    doc.setFontSize(12);
+                    doc.text('Notes:', 20, yPosition);
+                    yPosition += 8;
+                    
+                    doc.setFontSize(10);
+                    note.notes.forEach(noteText => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        doc.text(`• ${noteText}`, 25, yPosition);
+                        yPosition += 6;
+                    });
+                    yPosition += 5;
+                }
+                
+                // Summary section
+                if (note.summary && note.summary.trim()) {
+                    doc.setFontSize(12);
+                    doc.text('Summary:', 20, yPosition);
+                    yPosition += 8;
+                    
+                    doc.setFontSize(10);
+                    const summaryLines = doc.splitTextToSize(note.summary, 170);
+                    summaryLines.forEach(line => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        doc.text(line, 25, yPosition);
+                        yPosition += 6;
+                    });
+                }
+                
+                yPosition += 15; // Space between notes
+            });
+            
+            doc.save(`${classObj.name}_Notes.pdf`);
         }
-    });
 
-    addNoteBtn.addEventListener('click', () => {
-        if (!currentClass) {
-            alert('Please add a class first.');
-            return;
+        function exportNoteToPDF(noteId) {
+            const classObj = classes.find(c => c.id === currentClassId);
+            const note = classObj.notes.find(n => n.id === noteId);
+            
+            if (!note) {
+                alert('Note not found.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(18);
+            doc.text(note.title || 'Untitled Note', 20, 30);
+            
+            doc.setFontSize(12);
+            doc.text(`Class: ${classObj.name}`, 20, 45);
+            doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
+            
+            let yPosition = 75;
+            
+            // Cornell Note Layout
+            doc.setFontSize(14);
+            doc.text('Cornell Notes', 20, yPosition);
+            yPosition += 15;
+            
+            // Draw Cornell layout lines
+            doc.line(20, yPosition, 190, yPosition); // Top line
+            doc.line(20, yPosition, 20, yPosition + 120); // Left line
+            doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
+            doc.line(190, yPosition, 190, yPosition + 120); // Right line
+            doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
+            doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
+            
+            // Cues section
+            doc.setFontSize(10);
+            doc.text('Cues & Questions', 22, yPosition + 8);
+            
+            let cueY = yPosition + 18;
+            if (note.cues && note.cues.length > 0) {
+                note.cues.forEach(cue => {
+                    if (cueY < yPosition + 85) {
+                        const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
+                        cueLines.forEach(line => {
+                            if (cueY < yPosition + 85) {
+                                doc.text(line, 22, cueY);
+                                cueY += 5;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Notes section
+            doc.text('Notes', 72, yPosition + 8);
+            
+            let notesY = yPosition + 18;
+            if (note.notes && note.notes.length > 0) {
+                note.notes.forEach(noteText => {
+                    if (notesY < yPosition + 85) {
+                        const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
+                        noteLines.forEach(line => {
+                            if (notesY < yPosition + 85) {
+                                doc.text(line, 72, notesY);
+                                notesY += 5;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Summary section
+            doc.text('Summary', 22, yPosition + 98);
+            
+            if (note.summary && note.summary.trim()) {
+                const summaryLines = doc.splitTextToSize(note.summary, 165);
+                let summaryY = yPosition + 108;
+                summaryLines.forEach(line => {
+                    if (summaryY < yPosition + 118) {
+                        doc.text(line, 22, summaryY);
+                        summaryY += 5;
+                    }
+                });
+            }
+            
+            const fileName = `${note.title || 'Note'}_${classObj.name}.pdf`;
+            doc.save(fileName);
         }
-        const newNote = {
-            title: 'New Note',
-            cues: '<h4>Cues & Questions</h4>',
-            notes: '<h4>Notes</h4><ul class="bullet-list"><li>Start typing...</li></ul>',
-            summary: '<h4>Summary</h4>'
-        };
-        notes[currentClass].push(newNote);
-        saveToLocalStorage();
-        renderNotes();
-    });
 
-    // Initial render
-    renderClasses();
-    renderNotes();
-});
+        // Initial render
+        renderClasses();
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d313151401216',t:'MTc1NjE0Njk1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
