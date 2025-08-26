@@ -54,8 +54,6 @@
         }
 
         textarea {
-            field-sizing: content;
-            overflow-y: visible;
             width: 100%;
         }
     </style>
@@ -182,6 +180,18 @@
     </div>
 
     <script>
+        function setupAutoresize() {
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', e => {
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+            autoSave(); // Call autoSave after resize
+        });
+        // Initial resize on load
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    });
+} 
         let classes = [];
         let currentClassId = null;
         let currentNoteId = null;
@@ -477,6 +487,7 @@
             `;
             notesContent.appendChild(bullet);
             bullet.querySelector('textarea').focus();
+            setupAutoresize();
         }
 
         function autoSave() {
@@ -682,6 +693,7 @@
             `;
             notesContent.appendChild(bullet);
             bullet.querySelector('textarea').focus();
+            setupAutoresize();
         }
 
         // PDF Export Functions
