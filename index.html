@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
         .cornell-grid {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -19,31 +24,55 @@
             min-height: 400px;
             overflow-y: scroll;
         }
+
         .flex-1.p-4 {
-    overflow-y: auto;
-}
-        .cue-column { grid-column: 1; grid-row: 2; overflow-y: visible; }
-        .notes-column { grid-column: 2; grid-row: 2; overflow-y: visible;}
-        .summary-section { grid-column: 1 / -1; grid-row: 3; overflow-y: visible;}
-        .header-section { grid-column: 1 / -1; grid-row: 1; overflow-y: visible;}
-        textarea{
+            overflow-y: auto;
+        }
+
+        .cue-column {
+            grid-column: 1;
+            grid-row: 2;
+            overflow-y: visible;
+        }
+
+        .notes-column {
+            grid-column: 2;
+            grid-row: 2;
+            overflow-y: visible;
+        }
+
+        .summary-section {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            overflow-y: visible;
+        }
+
+        .header-section {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            overflow-y: visible;
+        }
+
+        textarea {
             field-sizing: content;
             overflow-y: visible;
             width: 100%;
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-6 max-w-7xl">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Cornell Notes</h1>
-            <button onclick="addClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <button onclick="addClass()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 + Add Class
             </button>
         </div>
 
         <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            </div>
+        </div>
 
         <div id="emptyState" class="text-center py-12 text-gray-500">
             <div class="text-6xl mb-4">📚</div>
@@ -55,13 +84,15 @@
     <div id="classModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4">Add New Class</h3>
-            <input type="text" id="classNameInput" placeholder="Class name (e.g., Biology 101)" 
-                   class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <input type="text" id="classNameInput" placeholder="Class name (e.g., Biology 101)"
+                class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <div class="flex gap-3">
-                <button onclick="saveClass()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
+                <button onclick="saveClass()"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
                     Create Class
                 </button>
-                <button onclick="closeModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                <button onclick="closeModal()"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
                     Cancel
                 </button>
             </div>
@@ -71,12 +102,15 @@
     <div id="deleteClassModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Class</h3>
-            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteClassName"></span>" and all its notes? This action cannot be undone.</p>
+            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteClassName"></span>" and all
+                its notes? This action cannot be undone.</p>
             <div class="flex gap-3">
-                <button onclick="confirmDeleteClass()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
+                <button onclick="confirmDeleteClass()"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
                     Delete Class
                 </button>
-                <button onclick="closeDeleteClassModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                <button onclick="closeDeleteClassModal()"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
                     Cancel
                 </button>
             </div>
@@ -86,12 +120,15 @@
     <div id="deleteNoteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-96 mx-4">
             <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Note</h3>
-            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteNoteName"></span>"? This action cannot be undone.</p>
+            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteNoteName"></span>"? This
+                action cannot be undone.</p>
             <div class="flex gap-3">
-                <button onclick="confirmDeleteNote()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
+                <button onclick="confirmDeleteNote()"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
                     Delete Note
                 </button>
-                <button onclick="closeDeleteNoteModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
+                <button onclick="closeDeleteNoteModal()"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
                     Cancel
                 </button>
             </div>
@@ -104,38 +141,40 @@
                 <h3 id="noteModalTitle" class="text-lg font-semibold">Taking Notes</h3>
                 <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
             </div>
-            
+
             <div class="flex-1 p-4">
                 <div class="cornell-grid h-full">
                     <div class="header-section bg-white p-4">
-                        <input type="text" id="noteTitle" placeholder="Note title..." 
-                               class="w-full text-lg font-medium border-none outline-none bg-transparent">
-                        <input type="text" id="noteDate" placeholder="Date..." 
-                               class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
+                        <input type="text" id="noteTitle" placeholder="Note title..."
+                            class="w-full text-lg font-medium border-none outline-none bg-transparent">
+                        <input type="text" id="noteDate" placeholder="Date..."
+                            class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
                     </div>
-                    
+
                     <div class="cue-column bg-white p-4">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-medium text-gray-700">Cues & Questions</h4>
-                            <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                            <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+
+                                Bullet</button>
                         </div>
                         <div id="cueContent" class="space-y-2">
-                            </div>
+                        </div>
                     </div>
-                    
+
                     <div class="notes-column bg-white p-4">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-medium text-gray-700">Notes</h4>
-                            <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                            <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+
+                                Bullet</button>
                         </div>
                         <div id="notesContent" class="space-y-2">
-                            </div>
+                        </div>
                     </div>
-                    
+
                     <div class="summary-section bg-white p-4">
                         <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
-                        <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
-                                  class="w-full h-20 resize-none border-none outline-none bg-transparent"></textarea>
+                        <textarea id="summaryContent" placeholder="Write a summary of your notes..."
+                            class="w-full h-20 resize-none border-none outline-none bg-transparent"></textarea>
                     </div>
                 </div>
             </div>
@@ -244,14 +283,14 @@
                     </div>
                 </div>
             `;
-            
+
             noteModal.classList.remove('hidden');
             noteModal.classList.add('flex');
         }
 
         function renderNotesList(classObj) {
             if (!classObj.notes || classObj.notes.length === 0) return '';
-            
+
             return classObj.notes.map(note => `
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
                     <div class="flex justify-between items-start mb-3">
@@ -292,19 +331,19 @@
                 notes: [],
                 summary: []
             };
-            
+
             const classObj = classes.find(c => c.id === currentClassId);
             if (!classObj.notes) classObj.notes = [];
             classObj.notes.push(newNote);
             await saveClasses();
-            
+
             editNote(newNote.id);
         }
 
         function editNote(noteId) {
             const classObj = classes.find(c => c.id === currentClassId);
             const note = classObj.notes.find(n => n.id === noteId);
-            
+
             showNoteEditor(note);
         }
 
@@ -368,7 +407,7 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
+                                            <textarea class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -384,7 +423,7 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
+                                            <textarea class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -400,7 +439,7 @@
                     </div>
                 </div>
             `;
-            
+
             currentNoteId = note.id;
         }
 
@@ -417,7 +456,7 @@
             bullet.innerHTML = `
                 <span class="text-blue-600 mt-1">•</span>
                 <textarea placeholder="Add a cue or question..." 
-                       class="flex-1 border-none outline-none bg-transparent" 
+                       class="border-none outline-none bg-transparent" 
                        onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
@@ -432,7 +471,7 @@
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
                 <textarea placeholder="Add a note..." 
-                       class="flex-1 border-none outline-none bg-transparent" 
+                       class=" border-none outline-none bg-transparent" 
                        onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
@@ -479,7 +518,7 @@
         async function renderClasses() {
             const grid = document.getElementById('classesGrid');
             const emptyState = document.getElementById('emptyState');
-            
+
             const loadedClasses = await localforage.getItem('cornellClasses');
             classes = loadedClasses || [];
 
@@ -505,16 +544,16 @@
                     </div>
                     
                     <div class="text-sm text-gray-600 mb-4">
-                        ${classObj.notes && classObj.notes.length > 0 ? 
-                            `<div class="flex items-center gap-2">
+                        ${classObj.notes && classObj.notes.length > 0 ?
+                    `<div class="flex items-center gap-2">
                                 <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                                 ${classObj.notes.length} note${classObj.notes.length === 1 ? '' : 's'}
-                            </div>` : 
-                            `<div class="flex items-center gap-2">
+                            </div>` :
+                    `<div class="flex items-center gap-2">
                                 <span class="w-2 h-2 bg-gray-300 rounded-full"></span>
                                 No notes yet
                             </div>`
-                        }
+                }
                     </div>
                     
                     <button onclick="openNotes(${classObj.id})" 
@@ -638,7 +677,7 @@
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <textarea class="flex-1 border-none outline-none bg-transparent" onchange="autoSave()">${text}</textarea>
+                <textarea class=" border-none outline-none bg-transparent" onchange="autoSave()">${text}</textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
             notesContent.appendChild(bullet);
@@ -655,37 +694,37 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Title page
             doc.setFontSize(20);
             doc.text(classObj.name, 20, 30);
             doc.setFontSize(12);
             doc.text(`Exported on: ${new Date().toLocaleDateString()}`, 20, 45);
             doc.text(`Total Notes: ${classObj.notes.length}`, 20, 55);
-            
+
             let yPosition = 80;
-            
+
             classObj.notes.forEach((note, index) => {
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
                 }
-                
+
                 // Note header
                 doc.setFontSize(16);
                 doc.text(`${index + 1}. ${note.title || 'Untitled Note'}`, 20, yPosition);
                 yPosition += 10;
-                
+
                 doc.setFontSize(10);
                 doc.text(`Date: ${note.date || 'No date'}`, 20, yPosition);
                 yPosition += 15;
-                
+
                 // Cues section
                 if (note.cues && note.cues.length > 0) {
                     doc.setFontSize(12);
                     doc.text('Cues & Questions:', 20, yPosition);
                     yPosition += 8;
-                    
+
                     doc.setFontSize(10);
                     note.cues.forEach(cue => {
                         if (yPosition > 270) {
@@ -697,13 +736,13 @@
                     });
                     yPosition += 5;
                 }
-                
+
                 // Notes section
                 if (note.notes && note.notes.length > 0) {
                     doc.setFontSize(12);
                     doc.text('Notes:', 20, yPosition);
                     yPosition += 8;
-                    
+
                     doc.setFontSize(10);
                     note.notes.forEach(noteText => {
                         if (yPosition > 270) {
@@ -715,13 +754,13 @@
                     });
                     yPosition += 5;
                 }
-                
+
                 // Summary section
                 if (note.summary && note.summary.trim()) {
                     doc.setFontSize(12);
                     doc.text('Summary:', 20, yPosition);
                     yPosition += 8;
-                    
+
                     const summaryLines = doc.splitTextToSize(note.summary, 170);
                     doc.setFontSize(10);
                     summaryLines.forEach(line => {
@@ -733,17 +772,17 @@
                         yPosition += 6;
                     });
                 }
-                
+
                 yPosition += 15; // Space between notes
             });
-            
+
             doc.save(`${classObj.name}_Notes.pdf`);
         }
 
         function exportNoteToPDF(noteId) {
             const classObj = classes.find(c => c.id === currentClassId);
             const note = classObj.notes.find(n => n.id === noteId);
-            
+
             if (!note) {
                 alert('Note not found.');
                 return;
@@ -751,22 +790,22 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Header
             doc.setFontSize(18);
             doc.text(note.title || 'Untitled Note', 20, 30);
-            
+
             doc.setFontSize(12);
             doc.text(`Class: ${classObj.name}`, 20, 45);
             doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
-            
+
             let yPosition = 75;
-            
+
             // Cornell Note Layout
             doc.setFontSize(14);
             doc.text('Cornell Notes', 20, yPosition);
             yPosition += 15;
-            
+
             // Draw Cornell layout lines
             doc.line(20, yPosition, 190, yPosition); // Top line
             doc.line(20, yPosition, 20, yPosition + 120); // Left line
@@ -774,11 +813,11 @@
             doc.line(190, yPosition, 190, yPosition + 120); // Right line
             doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
             doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
-            
+
             // Cues section
             doc.setFontSize(10);
             doc.text('Cues & Questions', 22, yPosition + 8);
-            
+
             let cueY = yPosition + 18;
             if (note.cues && note.cues.length > 0) {
                 note.cues.forEach(cue => {
@@ -793,10 +832,10 @@
                     }
                 });
             }
-            
+
             // Notes section
             doc.text('Notes', 72, yPosition + 8);
-            
+
             let notesY = yPosition + 18;
             if (note.notes && note.notes.length > 0) {
                 note.notes.forEach(noteText => {
@@ -811,10 +850,10 @@
                     }
                 });
             }
-            
+
             // Summary section
             doc.text('Summary', 22, yPosition + 98);
-            
+
             if (note.summary && note.summary.trim()) {
                 const summaryLines = doc.splitTextToSize(note.summary, 165);
                 let summaryY = yPosition + 108;
@@ -825,7 +864,7 @@
                     }
                 });
             }
-            
+
             const fileName = `${note.title || 'Note'}_${classObj.name}.pdf`;
             doc.save(fileName);
         }
@@ -835,5 +874,7 @@
             await renderClasses();
         })();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d3843e32899fb',t:'MTc1NjE0NzI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'974d3843e32899fb',t:'MTc1NjE0NzI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
 </html>
