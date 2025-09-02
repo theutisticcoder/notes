@@ -205,7 +205,7 @@ var user;
             }
             else {
                 user = await supa.auth.getUser()
-                classes = JSON.parse(await supa
+                classes = (await supa
                     .from('notes')
                     .select('notes')
                     .eq({ id: user.data.user.id })
@@ -240,12 +240,12 @@ var user;
             await localforage.setItem('cornellClasses', classes);
             const { error } = await supa
                 .from('notes')
-                .update([{ notes: JSON.stringify(classes), id: user.data.user.id }])
+                .update([{ notes: classes, id: user.data.user.id }])
                 .select();
             if (error) {
                 const { error } = await supa
                     .from('notes')
-                    .insert([{ notes: JSON.stringify(classes), id: user.data.user.id }])
+                    .insert([{ notes: classes, id: user.data.user.id }])
                     .select();
             }
         }
