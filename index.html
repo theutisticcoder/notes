@@ -202,11 +202,11 @@ var user;
                     password: pwd,
                 })
                 user = await supa.auth.getUser()
-                alert(user);
+                alert(JSON.stringify(user))
             }
             else {
                 user = await supa.auth.getUser()
-                alert(user)
+                alert(JSON.stringify(user))
                 classes = JSON.parse(await supa
                     .from('notes')
                     .select('notes')
