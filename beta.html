@@ -210,6 +210,8 @@
                     .select('notes')
                     .eq("id", user.data.user.id)
                 )
+                    await renderClasses();
+
                 if (err) {
                     classes = [];
                 }
@@ -923,10 +925,7 @@
             doc.save(fileName);
         }
 
-        // Initial render
-        (async () => {
-            await renderClasses();
-        })();
+      
     </script>
 </body>
 
