@@ -205,11 +205,14 @@ var user;
             }
             else {
                 user = await supa.auth.getUser()
-                classes = (await supa
+                var {dat, err} = (await supa
                     .from('notes')
                     .select('notes')
                     .eq("id", user.data.user.id)
                 )
+                if(err){
+                    classes = [];
+                }
             }
 
 
