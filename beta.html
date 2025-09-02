@@ -208,7 +208,7 @@ var user;
                 classes = (await supa
                     .from('notes')
                     .select('notes')
-                    .eq({ id: user.data.user.id })
+                    .eq("id", user.data.user.id)
                 )
             }
 
