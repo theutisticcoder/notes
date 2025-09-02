@@ -181,7 +181,7 @@
     </div>
 
     <script>
-        const {createClient} = supabase;
+        const { createClient } = supabase;
 
         var classes = [];
         // Create a single supabase client for interacting with your database
@@ -199,13 +199,11 @@
                     email: email,
                     password: pwd,
                 })
-                id = data.user.id;
             }
             else {
-                id = data.user.id;
-                classes = await supa
-                    .from('notes')
-                    .select('notes')
+                  var { data: { classes } } = await supabase.auth.getUser();
+                  classes = classes.data.classes;
+
             }
 
 
@@ -238,9 +236,11 @@
                 .from('notes')
                 .update({ notes: classes })
             if (error) {
-                const { error } = await supa
-                    .from('notes')
-                    .insert({ notes: classes })
+                const { data, error } = await supabase.auth.updateUser({
+                    data: {
+                        notes: classes,
+                    }
+                });
             }
         }
 
