@@ -201,11 +201,12 @@ var user;
                     email: email,
                     password: pwd,
                 })
-                const { data: { user } } = await supa.auth.getUser()
+                user = await supa.auth.getUser()
+                alert(user);
             }
             else {
-                const { data: { user } } = await supa.auth.getUser()
-
+                user = await supa.auth.getUser()
+                alert(user)
                 classes = JSON.parse(await supa
                     .from('notes')
                     .select('notes')
