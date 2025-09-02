@@ -242,10 +242,12 @@ var user;
             await localforage.setItem('cornellClasses', classes);
             const { error } = await supa
                 .from('notes')
+                .select('notes')
                 .update({ notes: JSON.stringify(classes), id: user.data.user.id })
             if (error) {
                 const { error } = await supa
                     .from('notes')
+                    .select('notes')
                     .insert({ notes: JSON.stringify(classes), id: user.data.user.id })
             }
         }
