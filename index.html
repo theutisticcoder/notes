@@ -180,8 +180,8 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from '@supabase/supabase-js'
+    <script>
+        const supabase = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
 
         (async ()=> {
         var classes = [];
@@ -189,7 +189,6 @@
         var email = prompt("Put in your email.")
         var pwd = prompt("Put in your password.")
         var id;
-        const supabase = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
