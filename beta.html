@@ -242,7 +242,8 @@
         async function saveClasses() {
             const { data, error } = await supa
                 .from('notes')
-                .upsert([{ notes: classes, id: user.data.user.id }])
+                .update([{ notes: classes, id: user.data.user.id }])
+                .eq("id", user.data.user.id)
                 .select();
 
             if (error) {
