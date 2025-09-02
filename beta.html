@@ -240,15 +240,16 @@ var user;
         let isTranscribing = false;
 
         async function saveClasses() {
-            await localforage.setItem('cornellClasses', classes);
-            const { error } = await supa
+            const { data, error } = await supa
                 .from('notes')
-                .update([{ notes: classes, id: user.data.user.id }])
+                .update([{ notes: classes, id: user.data.user.id },])
+                .eq("id", user.data.user.id)
                 .select();
             if (error) {
-                const { error } = await supa
+                const { data, error } = await supa
                     .from('notes')
-                    .insert([{ notes: classes, id: user.data.user.id }])
+                    .insert([{ notes: classes, id: user.data.user.id },])
+                    .eq("id", user.data.user.id)
                     .select();
             }
         }
