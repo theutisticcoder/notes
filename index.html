@@ -243,10 +243,12 @@ var user;
             const { error } = await supa
                 .from('notes')
                 .update({ notes: JSON.stringify(classes), id: user.data.user.id })
+                .select();
             if (error) {
                 const { error } = await supa
                     .from('notes')
                     .insert({ notes: JSON.stringify(classes), id: user.data.user.id })
+                    .select();
             }
         }
 
