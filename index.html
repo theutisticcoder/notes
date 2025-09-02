@@ -245,7 +245,7 @@ var user;
             if (error) {
                 const { error } = await supa
                     .from('notes')
-                    .insert({ notes: JSON.stringify(classes), id: user.data.user.id })
+                    .insert([{ notes: JSON.stringify(classes), id: user.data.user.id }])
                     .select();
             }
         }
