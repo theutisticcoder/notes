@@ -377,6 +377,17 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             calcs.push(calculator)
 
         }
+         function loadgraph(data){
+            const notesContent = document.getElementById('notesContent');
+            var elt = document.createElement("div");
+            elt.style.height = "200px";
+            elt.style.width = "100%";
+            notesContent.appendChild(elt);
+            var calculator = Desmos.GraphingCalculator(elt);
+            calculator.setState(data)
+            calcs.push(calculator)
+
+        }
         function showNotesView(classObj) {
             const noteModal = document.getElementById('noteModal');
             noteModal.innerHTML = `
@@ -453,6 +464,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                 date: new Date().toLocaleDateString(),
                 cues: [],
                 notes: [],
+                graphs: [],
                 summary: []
             };
 
@@ -564,7 +576,9 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                     </div>
                 </div>
             `;
-
+                note.graphs.forEach(state=>{
+                    loadgraph(state);
+                });
             currentNoteId = note.id;
         }
 
@@ -635,6 +649,13 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             if (cueTextareas.length > 0) {
                 note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
+            }
+            if (graphs.length > 0) {
+                var states = []
+                for(let i = 0; i< calcs.length; i++){
+                   states.push(calcs[i].getState());
+                }
+                note.graphs = states;
             }
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
