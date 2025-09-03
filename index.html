@@ -376,7 +376,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             var calculator = Desmos.GraphingCalculator(elt);
             
             var del = document.createElement("button");
-            del.value = "Delete Graph"
+            del.innerHTML = "Delete Graph"
             del.style.background = "maroon"
             del.style.color = "white"
             del.onclick = () => {
@@ -405,7 +405,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             calculator.setState(data)
             if(!calcs.includes(calculator))calcs.push(calculator)
             var del = document.createElement("button");
-            del.value = "Delete Graph"
+            del.innerHTML = "Delete Graph"
             del.style.background = "maroon"
             del.style.color = "white"
             del.onclick = () => {
