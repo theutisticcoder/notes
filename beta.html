@@ -205,7 +205,7 @@
             }
             else {
                 user = await supa.auth.getUser()
-                var { dat, err } = (await supa
+                const { dat, err } = (await supa
                     .from('notes')
                     .select('notes')
                     .eq("id", user.data.user.id)
