@@ -188,38 +188,58 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         const { createClient } = supabase;
 
         var classes = [];
-        
 
-       var login;
+
+        var login;
 
         var id;
         const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
-        var user;
+var user;
+        if (localforage.getItem("username")) {
+            const { data, error } = await supa.auth.signInWithPassword({
+                email: localforage.getItem("username"),
+                password: localforage.getItem("password"),
+            })
+             user = await supa.auth.getUser()
+                classes = (await supa
+                    .from('notes')
+                    .select('notes')
+                    .eq("id", user.data.user.id)
+                ).data[0].notes;
+                await renderClasses();
+        }
+        else{
+            
         setTimeout(async () => {
-              login = await Swal.fire({
-            title: 'Login Form',
-            html: `
+            login = await Swal.fire({
+                title: 'Login Form',
+                html: `
     <input type="email" id="username" class="swal2-input" placeholder="Email">
     <input type="password" id="password" class="swal2-input" placeholder="Password">
+    <input type="checkbox" id="save" class="swal2-input"><p>Save Login?</p>
   `,
-            confirmButtonText: 'Sign in',
-            focusConfirm: false,
-            didOpen: () => {
-                const popup = Swal.getPopup()
-                usernameInput = popup.querySelector('#username')
-                passwordInput = popup.querySelector('#password')
-                usernameInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-                passwordInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-            },
-            preConfirm: () => {
-                const username = usernameInput.value
-                const password = passwordInput.value
-                if (!username || !password) {
-                    Swal.showValidationMessage(`Please enter username and password`)
-                }
-                return { username, password }
-            },
-        })
+                confirmButtonText: 'Sign in',
+                focusConfirm: false,
+                didOpen: () => {
+                    const popup = Swal.getPopup()
+                    usernameInput = popup.querySelector('#username')
+                    passwordInput = popup.querySelector('#password')
+                    usernameInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
+                    passwordInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
+                },
+                preConfirm: () => {
+                    if (document.querySelector("#save").checked) {
+                        localforage.setItem("username", usernameInput.value)
+                        localforage.setItem("password", passwordInput.value)
+                    }
+                    const username = usernameInput.value
+                    const password = passwordInput.value
+                    if (!username || !password) {
+                        Swal.showValidationMessage(`Please enter username and password`)
+                    }
+                    return { username, password }
+                },
+            })
             const { data, error } = await supa.auth.signInWithPassword({
                 email: login.value.username,
                 password: login.value.password,
@@ -246,6 +266,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
 
         }, 100)
+        }
 
         function setupAutoresize() {
             document.querySelectorAll('textarea').forEach(textarea => {
