@@ -367,7 +367,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             showNotesView(classObj);
         }
         var calcs = [];
-        function addgraph(){
+        function addgraph() {
             const notesContent = document.getElementById('notesContent');
             var elt = document.createElement("div");
             elt.style.height = "200px";
@@ -375,9 +375,14 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
             calcs.push(calculator)
-
+            var del = document.createElement("button");
+            del.value = "Delete Graph"
+            del.onclick = () => {
+                elt.remove();
+            }
+            notesContent.appendChild(del);
         }
-         function loadgraph(data){
+        function loadgraph(data) {
             const notesContent = document.getElementById('notesContent');
             var elt = document.createElement("div");
             elt.style.height = "200px";
@@ -386,6 +391,12 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             var calculator = Desmos.GraphingCalculator(elt);
             calculator.setState(data)
             calcs.push(calculator)
+            var del = document.createElement("button");
+            del.value = "Delete Graph"
+            del.onclick = () => {
+                elt.remove();
+            }
+            notesContent.appendChild(del);
 
         }
         function showNotesView(classObj) {
@@ -576,9 +587,9 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                     </div>
                 </div>
             `;
-                note.graphs.forEach(state=>{
-                    loadgraph(state);
-                });
+            note.graphs.forEach(state => {
+                loadgraph(state);
+            });
             currentNoteId = note.id;
         }
 
@@ -645,22 +656,22 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             const cueTextareas = document.querySelectorAll('#cueContent textarea');
             const noteTextareas = document.querySelectorAll('#notesContent textarea');
             const graphs = document.querySelectorAll('#notesContent div');
-            
+
 
             if (cueTextareas.length > 0) {
                 note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
             if (graphs.length > 0) {
                 var states = []
-                for(let i = 0; i< calcs.length; i++){
-                   states.push(calcs[i].getState());
+                for (let i = 0; i < calcs.length; i++) {
+                    states.push(calcs[i].getState());
                 }
                 note.graphs = states;
             }
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-           await saveClasses();
+            await saveClasses();
         }
 
         async function renderClasses() {
