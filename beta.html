@@ -221,14 +221,14 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             },
         })
             const { data, error } = await supa.auth.signInWithPassword({
-                email: login.username,
-                password: login.password,
+                email: login.value.username,
+                password: login.value.password,
             })
 
             if (error) {
                 const { data, error } = await supa.auth.signUp({
-                    email: login.username,
-                    password: login.password,
+                    email: login.value.username,
+                    password: login.value.password,
                 })
                 user = await supa.auth.getUser()
             }
