@@ -381,6 +381,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             del.style.color = "white"
             del.onclick = () => {
                 elt.remove();
+                this.remove();
             }
             notesContent.appendChild(del);
             const classObj = classes.find(c => c.id === currentClassId);
@@ -410,6 +411,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             del.style.color = "white"
             del.onclick = () => {
                 elt.remove();
+                this.remove();
             }
             notesContent.appendChild(del);
         }
@@ -870,85 +872,87 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Title page
-            doc.setFontSize(20);
-            doc.text(classObj.name, 20, 30);
-            doc.setFontSize(12);
-            doc.text(`Exported on: ${new Date().toLocaleDateString()}`, 20, 45);
-            doc.text(`Total Notes: ${classObj.notes.length}`, 20, 55);
-
-            let yPosition = 80;
-
+           
             classObj.notes.forEach((note, index) => {
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
-                }
+                }const doc = new jsPDF();
 
-                // Note header
-                doc.setFontSize(16);
-                doc.text(`${index + 1}. ${note.title || 'Untitled Note'}`, 20, yPosition);
-                yPosition += 10;
+            // Header
+            doc.setFontSize(18);
+            doc.text(note.title || 'Untitled Note', 20, 30);
 
-                doc.setFontSize(10);
-                doc.text(`Date: ${note.date || 'No date'}`, 20, yPosition);
-                yPosition += 15;
+            doc.setFontSize(12);
+            doc.text(`Class: ${classObj.name}`, 20, 45);
+            doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
 
-                // Cues section
-                if (note.cues && note.cues.length > 0) {
-                    doc.setFontSize(12);
-                    doc.text('Cues & Questions:', 20, yPosition);
-                    yPosition += 8;
+            let yPosition = 75;
 
-                    doc.setFontSize(10);
-                    note.cues.forEach(cue => {
-                        if (yPosition > 270) {
-                            doc.addPage();
-                            yPosition = 30;
-                        }
-                        doc.text(`• ${cue}`, 25, yPosition);
-                        yPosition += 6;
-                    });
-                    yPosition += 5;
-                }
+            // Cornell Note Layout
+            doc.setFontSize(14);
+            doc.text('Cornell Notes', 20, yPosition);
+            yPosition += 15;
 
-                // Notes section
-                if (note.notes && note.notes.length > 0) {
-                    doc.setFontSize(12);
-                    doc.text('Notes:', 20, yPosition);
-                    yPosition += 8;
+            // Draw Cornell layout lines
+            doc.line(20, yPosition, 190, yPosition); // Top line
+            doc.line(20, yPosition, 20, yPosition + 120); // Left line
+            doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
+            doc.line(190, yPosition, 190, yPosition + 120); // Right line
+            doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
+            doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
 
-                    doc.setFontSize(10);
-                    note.notes.forEach(noteText => {
-                        if (yPosition > 270) {
-                            doc.addPage();
-                            yPosition = 30;
-                        }
-                        doc.text(`• ${noteText}`, 25, yPosition);
-                        yPosition += 6;
-                    });
-                    yPosition += 5;
-                }
+            // Cues section
+            doc.setFontSize(10);
+            doc.text('Cues & Questions', 22, yPosition + 8);
 
-                // Summary section
-                if (note.summary && note.summary.trim()) {
-                    doc.setFontSize(12);
-                    doc.text('Summary:', 20, yPosition);
-                    yPosition += 8;
+            let cueY = yPosition + 18;
+            if (note.cues && note.cues.length > 0) {
+                note.cues.forEach(cue => {
+                    if (cueY < yPosition + 85) {
+                        const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
+                        cueLines.forEach(line => {
+                            if (cueY < yPosition + 85) {
+                                doc.text(line, 22, cueY);
+                                cueY += 5;
+                            }
+                        });
+                    }
+                });
+            }
 
-                    const summaryLines = doc.splitTextToSize(note.summary, 170);
-                    doc.setFontSize(10);
-                    summaryLines.forEach(line => {
-                        if (yPosition > 270) {
-                            doc.addPage();
-                            yPosition = 30;
-                        }
-                        doc.text(line, 25, yPosition);
-                        yPosition += 6;
-                    });
-                }
+            // Notes section
+            doc.text('Notes', 72, yPosition + 8);
 
-                yPosition += 15; // Space between notes
+            let notesY = yPosition + 18;
+            if (note.notes && note.notes.length > 0) {
+                note.notes.forEach(noteText => {
+                    if (notesY < yPosition + 85) {
+                        const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
+                        noteLines.forEach(line => {
+                            if (notesY < yPosition + 85) {
+                                doc.text(line, 72, notesY);
+                                notesY += 5;
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Summary section
+            doc.text('Summary', 22, yPosition + 98);
+
+            if (note.summary && note.summary.trim()) {
+                const summaryLines = doc.splitTextToSize(note.summary, 165);
+                let summaryY = yPosition + 108;
+                summaryLines.forEach(line => {
+                    if (summaryY < yPosition + 118) {
+                        doc.text(line, 22, summaryY);
+                        summaryY += 5;
+                    }
+                });
+            }
+
             });
 
             doc.save(`${classObj.name}_Notes.pdf`);
