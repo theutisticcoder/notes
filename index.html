@@ -381,7 +381,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             del.style.color = "white"
             del.onclick = () => {
                 elt.remove();
-                this.remove();
+                del.parentNode.removeChild(del);
             }
             notesContent.appendChild(del);
             const classObj = classes.find(c => c.id === currentClassId);
@@ -411,7 +411,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             del.style.color = "white"
             del.onclick = () => {
                 elt.remove();
-                this.remove();
+                del.parentNode.removeChild(del);
             }
             notesContent.appendChild(del);
         }
