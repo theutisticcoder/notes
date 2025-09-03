@@ -389,7 +389,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             const note = classObj.notes.find(n => n.id === currentNoteId);
             if (!note) return;
-                note.graphs.push(calculator)
+                note.graphs.push(JSON.parse(calculator))
             
         }
         function loadgraph(data) {
