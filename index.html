@@ -71,6 +71,10 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 + Add Class
             </button>
+            <button onclick="logout()"
+                class="bg-maroon-500 hover:bg-maroon-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Sign Out
+            </button>
         </div>
 
         <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,6 +198,11 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         var id;
         const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
 var user;
+function logout(){
+    localStorage.removeItem("username")
+    localStorage.removeItem("password")
+    location.reload();
+}
         setTimeout(async () => {
 
         if (localStorage.getItem("username")) {
