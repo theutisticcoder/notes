@@ -195,6 +195,8 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         var id;
         const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
 var user;
+        setTimeout(async () => {
+
         if (localforage.getItem("username")) {
             const { data, error } = await supa.auth.signInWithPassword({
                 email: localforage.getItem("username"),
@@ -210,7 +212,6 @@ var user;
         }
         else{
             
-        setTimeout(async () => {
             login = await Swal.fire({
                 title: 'Login Form',
                 html: `
@@ -263,10 +264,10 @@ var user;
 
 
             }
-
+        }
 
         }, 100)
-        }
+        
 
         function setupAutoresize() {
             document.querySelectorAll('textarea').forEach(textarea => {
