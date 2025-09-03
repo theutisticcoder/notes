@@ -7,7 +7,6 @@
     <title>Cornell Notes App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.all.min.js"></script>
     <link href="
@@ -197,10 +196,10 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 var user;
         setTimeout(async () => {
 
-        if (localforage.getItem("username")) {
+        if (localStorage.getItem("username")) {
             const { data, error } = await supa.auth.signInWithPassword({
-                email: localforage.getItem("username"),
-                password: localforage.getItem("password"),
+                email: localStorage.getItem("username"),
+                password: localStorage.getItem("password"),
             })
              user = await supa.auth.getUser()
                 classes = (await supa
@@ -230,8 +229,8 @@ var user;
                 },
                 preConfirm: () => {
                     if (document.querySelector("#save").checked) {
-                        localforage.setItem("username", usernameInput.value)
-                        localforage.setItem("password", passwordInput.value)
+                        localStorage.setItem("username", usernameInput.value)
+                        localStorage.setItem("password", passwordInput.value)
                     }
                     const username = usernameInput.value
                     const password = passwordInput.value
