@@ -227,8 +227,8 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             if (error) {
                 const { data, error } = await supa.auth.signUp({
-                    email: email,
-                    password: pwd,
+                    email: login.username,
+                    password: login.password,
                 })
                 user = await supa.auth.getUser()
             }
