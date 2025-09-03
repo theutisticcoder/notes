@@ -209,8 +209,7 @@
                     .from('notes')
                     .select('notes')
                     .eq("id", user.data.user.id)
-                )
-                
+                ).data;
                     await renderClasses();
 
                
