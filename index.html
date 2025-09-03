@@ -374,6 +374,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             elt.style.width = "100%";
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
+            calcs.push(calculator)
             var del = document.createElement("button");
             del.value = "Delete Graph"
             del.onclick = () => {
@@ -389,7 +390,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
             calculator.setState(data)
-            calcs.push(calculator)
+            if(!calcs.includes(calculator))calcs.push(calculator)
             var del = document.createElement("button");
             del.value = "Delete Graph"
             del.onclick = () => {
@@ -592,7 +593,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                 });
                 currentNoteId = note.id;
             }
-            else{
+            else {
                 note.graphs = [];
             }
 
