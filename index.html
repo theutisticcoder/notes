@@ -374,13 +374,24 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             elt.style.width = "100%";
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
-            calcs.push(calculator)
+            
             var del = document.createElement("button");
             del.value = "Delete Graph"
             del.onclick = () => {
                 elt.remove();
             }
             notesContent.appendChild(del);
+            const classObj = classes.find(c => c.id === currentClassId);
+            if (!classObj) return;
+
+            const note = classObj.notes.find(n => n.id === currentNoteId);
+            if (!note) return;
+            if(note.graphs){
+                note.graphs.push(calculator)
+            }
+            else{
+                note.graphs = [calculator]
+            }
         }
         function loadgraph(data) {
             const notesContent = document.getElementById('notesContent');
@@ -397,7 +408,6 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                 elt.remove();
             }
             notesContent.appendChild(del);
-
         }
         function showNotesView(classObj) {
             const noteModal = document.getElementById('noteModal');
@@ -667,13 +677,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             if (cueTextareas.length > 0) {
                 note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-            if (graphs.length > 0) {
-                var states = []
-                for (let i = 0; i < calcs.length; i++) {
-                    states.push(calcs[i].getState());
-                }
-                note.graphs = states;
-            }
+            
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
