@@ -67,15 +67,14 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
     <div class="container mx-auto px-4 py-6 max-w-7xl">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Cornell Notes</h1>
-             <button onclick="logout()"
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Sign Out
-            </button>
             <button onclick="addClass()"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 + Add Class
             </button>
-           
+            <button onclick="logout()"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Sign Out
+            </button>
         </div>
 
         <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -198,85 +197,85 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
         var id;
         const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
-var user;
-function logout(){
-    localStorage.removeItem("username")
-    localStorage.removeItem("password")
-    location.reload();
-}
+        var user;
+        function logout() {
+            localStorage.removeItem("username")
+            localStorage.removeItem("password")
+            location.reload();
+        }
         setTimeout(async () => {
 
-        if (localStorage.getItem("username")) {
-            const { data, error } = await supa.auth.signInWithPassword({
-                email: localStorage.getItem("username"),
-                password: localStorage.getItem("password"),
-            })
-             user = await supa.auth.getUser()
+            if (localStorage.getItem("username")) {
+                const { data, error } = await supa.auth.signInWithPassword({
+                    email: localStorage.getItem("username"),
+                    password: localStorage.getItem("password"),
+                })
+                user = await supa.auth.getUser()
                 classes = (await supa
                     .from('notes')
                     .select('notes')
                     .eq("id", user.data.user.id)
                 ).data[0].notes;
                 await renderClasses();
-        }
-        else{
-            
-            login = await Swal.fire({
-                title: 'Login Form',
-                html: `
+            }
+            else {
+
+                login = await Swal.fire({
+                    title: 'Login Form',
+                    html: `
     <input type="email" id="username" class="swal2-input" placeholder="Email">
     <input type="password" id="password" class="swal2-input" placeholder="Password">
     <input type="checkbox" id="save" class="swal2-input"><p>Save Login?</p>
   `,
-                confirmButtonText: 'Sign in',
-                focusConfirm: false,
-                didOpen: () => {
-                    const popup = Swal.getPopup()
-                    usernameInput = popup.querySelector('#username')
-                    passwordInput = popup.querySelector('#password')
-                    usernameInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-                    passwordInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-                },
-                preConfirm: () => {
-                    if (document.querySelector("#save").checked) {
-                        localStorage.setItem("username", usernameInput.value)
-                        localStorage.setItem("password", passwordInput.value)
-                    }
-                    const username = usernameInput.value
-                    const password = passwordInput.value
-                    if (!username || !password) {
-                        Swal.showValidationMessage(`Please enter username and password`)
-                    }
-                    return { username, password }
-                },
-            })
-            const { data, error } = await supa.auth.signInWithPassword({
-                email: login.value.username,
-                password: login.value.password,
-            })
-
-            if (error) {
-                const { data, error } = await supa.auth.signUp({
+                    confirmButtonText: 'Sign in',
+                    focusConfirm: false,
+                    didOpen: () => {
+                        const popup = Swal.getPopup()
+                        usernameInput = popup.querySelector('#username')
+                        passwordInput = popup.querySelector('#password')
+                        usernameInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
+                        passwordInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
+                    },
+                    preConfirm: () => {
+                        if (document.querySelector("#save").checked) {
+                            localStorage.setItem("username", usernameInput.value)
+                            localStorage.setItem("password", passwordInput.value)
+                        }
+                        const username = usernameInput.value
+                        const password = passwordInput.value
+                        if (!username || !password) {
+                            Swal.showValidationMessage(`Please enter username and password`)
+                        }
+                        return { username, password }
+                    },
+                })
+                const { data, error } = await supa.auth.signInWithPassword({
                     email: login.value.username,
                     password: login.value.password,
                 })
-                user = await supa.auth.getUser()
-            }
-            else {
-                user = await supa.auth.getUser()
-                classes = (await supa
-                    .from('notes')
-                    .select('notes')
-                    .eq("id", user.data.user.id)
-                ).data[0].notes;
-                await renderClasses();
+
+                if (error) {
+                    const { data, error } = await supa.auth.signUp({
+                        email: login.value.username,
+                        password: login.value.password,
+                    })
+                    user = await supa.auth.getUser()
+                }
+                else {
+                    user = await supa.auth.getUser()
+                    classes = (await supa
+                        .from('notes')
+                        .select('notes')
+                        .eq("id", user.data.user.id)
+                    ).data[0].notes;
+                    await renderClasses();
 
 
+                }
             }
-        }
 
         }, 100)
-        
+
 
         function setupAutoresize() {
             document.querySelectorAll('textarea').forEach(textarea => {
