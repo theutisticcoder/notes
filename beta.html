@@ -190,7 +190,13 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         var classes = [];
         
 
-        var login = await Swal.fire({
+       
+
+        var id;
+        const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
+        var user;
+        setTimeout(async () => {
+             var login = await Swal.fire({
             title: 'Login Form',
             html: `
     <input type="email" id="username" class="swal2-input" placeholder="Email">
@@ -214,11 +220,6 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                 return { username, password }
             },
         })
-
-        var id;
-        const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
-        var user;
-        setTimeout(async () => {
             const { data, error } = await supa.auth.signInWithPassword({
                 email: login.username,
                 password: login.password,
