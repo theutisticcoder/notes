@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.all.min.js"></script>
+    <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=61e149774ef749af85e101d235490606"></script>
     <link href="
 https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 " rel="stylesheet">
@@ -365,7 +366,17 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             const classObj = classes.find(c => c.id === classId);
             showNotesView(classObj);
         }
+        var calcs = [];
+        function addgraph(){
+            const notesContent = document.getElementById('notesContent');
+            var elt = document.createElement("div");
+            elt.style.height = "200px";
+            elt.style.width = "100%";
+            notesContent.appendChild(elt);
+            var calculator = Desmos.GraphingCalculator(elt);
+            calcs.push(calculator)
 
+        }
         function showNotesView(classObj) {
             const noteModal = document.getElementById('noteModal');
             noteModal.innerHTML = `
@@ -531,6 +542,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                                 <div class="flex justify-between items-center mb-3">
                                     <h4 class="font-medium text-gray-700">Notes</h4>
                                     <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
+                                    <button onclick="addgraph()" class="text-blue-600 hover:text-blue-700 text-sm">+ Graph</button>
                                 </div>
                                 <div id="notesContent" class="space-y-2">
                                     ${note.notes.map(noteText => `
@@ -618,6 +630,8 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             const cueTextareas = document.querySelectorAll('#cueContent textarea');
             const noteTextareas = document.querySelectorAll('#notesContent textarea');
+            const graphs = document.querySelectorAll('#notesContent div');
+            
 
             if (cueTextareas.length > 0) {
                 note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
@@ -625,8 +639,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-
-            await saveClasses();
+           await saveClasses();
         }
 
         async function renderClasses() {
