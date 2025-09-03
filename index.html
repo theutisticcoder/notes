@@ -389,8 +389,8 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             const note = classObj.notes.find(n => n.id === currentNoteId);
             if (!note) return;
-                note.graphs.push(calculator.getState())
-            
+                
+            calcs.push({id: note.id, calculator: calculator})
         }
         function loadgraph(data) {
             const notesContent = document.getElementById('notesContent');
@@ -682,6 +682,15 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
+             if (graphs.length > 0) {
+                note.graphs = [];
+                calcs.forEach(calc => {
+                    if(calc.id === currentNoteId){
+                        note.graphs.push(calc.calculator.getState())
+                    }
+                })
+            }
+
             await saveClasses();
         }
 
