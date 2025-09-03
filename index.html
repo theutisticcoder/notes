@@ -753,6 +753,9 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                     }
                     tempInput.value = finalTranscript + interimTranscript;
                 };
+                recognition.onspeechend = ()=> {
+                    recognition.start();
+                }
 
                 recognition.onend = async () => {
                     // When transcription ends, remove the interim input and save the final text
