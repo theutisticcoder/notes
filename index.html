@@ -644,11 +644,14 @@
                 note.graphs = [];
             }
             currentNoteId = note.id;
-ClassicEditor
+            setTimeout(()=>{
+                ClassicEditor
             .create( document.querySelector( '#editor' ) )
             .catch( error => {
                 console.error( error );
-            } );
+            },50);
+
+
 
         }
 
