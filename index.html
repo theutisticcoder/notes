@@ -570,8 +570,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                                 <div id="cueContent" class="space-y-2">
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
-                                            <span class="text-blue-600 mt-1">•</span>
-                                            <textarea class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
+                                            <div id="editor" class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</div>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -587,8 +586,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                                 <div id="notesContent" class="space-y-2">
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
-                                            <span class="text-gray-600 mt-1">•</span>
-                                            <textarea class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
+                                            <div id="editor" class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</div>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
