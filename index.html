@@ -285,12 +285,12 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         function setupAutoresize() {
             document.querySelectorAll('#editor').forEach(textarea => {
                 textarea.addEventListener('input', e => {
-                    e.target.style.height = 'auto';
+                    e.target.style.height = '300px';
                     e.target.style.height = e.target.scrollHeight + 'px';
                     autoSave(); // Call autoSave after resize
                 });
                 // Initial resize on load
-                textarea.style.height = 'auto';
+                textarea.style.height = '300px';
                 textarea.style.height = textarea.scrollHeight + 'px';
             });
         }
