@@ -798,17 +798,7 @@
         });
 
         // Handle Enter key for adding bullets
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.target.closest('#cueContent')) {
-                e.preventDefault();
-                addCueBullet();
-            } else if (e.key === 'Enter' && e.target.closest('#notesContent')) {
-                e.preventDefault();
-                addNoteBullet();
-            } else if (e.key === 'Enter' && e.target.id === 'classNameInput') {
-                saveClass();
-            }
-        });
+        
 
         // Speech Recognition Functions
         function toggleTranscription() {
