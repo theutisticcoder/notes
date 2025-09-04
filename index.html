@@ -327,11 +327,32 @@
         // New variables for audio recording
         let recognition;
         let isTranscribing = false;
+function refReplacer() {
+  let m = new Map(), v= new Map(), init = null;
+
+  // in TypeScript add "this: any" param to avoid compliation errors - as follows
+  //    return function (this: any, field: any, value: any) {
+  return function(field, value) {
+    let p= m.get(this) + (Array.isArray(this) ? `[${field}]` : '.' + field); 
+    let isComplex= value===Object(value)
+    
+    if (isComplex) m.set(value, p);  
+    
+    let pp = v.get(value)||'';
+    let path = p.replace(/undefined\.\.?/,'');
+    let val = pp ? `#REF:${pp[0]=='[' ? '$':'$.'}${pp}` : value;
+    
+    !init ? (init=value) : (val===init ? val="#REF:$" : 0);
+    if(!pp && isComplex) v.set(value, path);
+   
+    return val;
+  }
+}
 
         async function saveClasses() {
             const { data, error } = await supa
                 .from('notes')
-                .upsert([{ notes: CryptoJS.AES.encrypt( JSON.stringify(classes), secret), id: user.data.user.id }])
+                .upsert([{ notes: CryptoJS.AES.encrypt( JSON.stringify(classes, refReplacer), secret), id: user.data.user.id }])
                 .select();
 
             if (error) {
