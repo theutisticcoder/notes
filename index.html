@@ -643,6 +643,11 @@
                 note.graphs = [];
             }
             currentNoteId = note.id;
+ClassicEditor
+            .create( document.querySelector( '#editor' ) )
+            .catch( error => {
+                console.error( error );
+            } );
 
         }
 
