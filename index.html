@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notefy</title>
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/46.0.3/ckeditor5.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -645,11 +644,12 @@
             }
             currentNoteId = note.id;
             setTimeout(()=>{
-                ClassicEditor
-            .create( document.querySelector( '#editor' ) )
-            .catch( error => {
-                console.error( error );
-            })
+                const editor = new EditorJS({
+  /**
+   * Id of Element that should contain the Editor
+   */
+  holderId : 'editor'
+}
 },50)
 
 
@@ -673,11 +673,12 @@
                        onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
-            ClassicEditor
-            .create( document.querySelector( '#editor' ) )
-            .catch( error => {
-                console.error( error );
-            } );
+            const editor = new EditorJS({
+  /**
+   * Id of Element that should contain the Editor
+   */
+  holderId : 'editor'
+}
 
             cueContent.appendChild(bullet);
             bullet.querySelector('textarea').focus();
@@ -696,11 +697,11 @@
             `;
 
             notesContent.appendChild(bullet);
-            ClassicEditor
-            .create( document.querySelector( '#editor' ) )
-            .catch( error => {
-                console.error( error );
-            } );
+            const editor = new EditorJS({
+  /**
+   * Id of Element that should contain the Editor
+   */
+  holderId : 'editor'}
 
             bullet.querySelector('textarea').focus();
             setupAutoresize();
