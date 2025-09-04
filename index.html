@@ -602,6 +602,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
                     </div>
                 </div>
             `;
+            const quill = new Quill('#editor')
             if (note.graphs) {
                 note.graphs.forEach(state => {
                     loadgraph(state);
