@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notefy</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -192,7 +193,7 @@
         const { createClient } = supabase;
 
         var classes = [];
-
+        var secret;
 
         var login;
 
@@ -207,6 +208,13 @@
         setTimeout(async () => {
 
             if (localStorage.getItem("username")) {
+                if (localStorage.getItem("secret")) {
+                    secret = localStorage.getItem("secret")
+                }
+                else {
+                    secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally UNTIL you sign out");
+                    localStorage.setItem("secret", secret)
+                }
                 const { data, error } = await supa.auth.signInWithPassword({
                     email: localStorage.getItem("username"),
                     password: localStorage.getItem("password"),
@@ -217,6 +225,11 @@
                     .select('notes')
                     .eq("id", user.data.user.id)
                 ).data[0].notes;
+                if (typeof (classes) != "object") {
+                    classes = JSON.parse(CryptoJS.AES.decrypt(classes, secret).toString(CryptoJS.enc.Utf8));
+
+
+                }
                 await renderClasses();
             }
             else {
@@ -261,21 +274,37 @@
                         password: login.value.password,
                     })
                     user = await supa.auth.getUser()
+                    secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally");
+                    localStorage.setItem("secret", secret);
                 }
                 else {
+                    if (localStorage.getItem("secret")) {
+                        secret = localStorage.getItem("secret")
+                    }
+                    else {
+                        secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally UNTIL you sign out");
+                        localStorage.setItem("secret", secret)
+                    }
+
                     user = await supa.auth.getUser()
                     classes = (await supa
                         .from('notes')
                         .select('notes')
                         .eq("id", user.data.user.id)
                     ).data[0].notes;
+                    if (typeof (classes) != "object") {
+                        classes = JSON.parse(CryptoJS.AES.decrypt(classes, secret).toString(CryptoJS.enc.Utf8));
+
+
+                    }
+
                     await renderClasses();
 
 
                 }
             }
 
-        }, 100)
+        }, 10)
 
 
         function setupAutoresize() {
@@ -302,7 +331,7 @@
         async function saveClasses() {
             const { data, error } = await supa
                 .from('notes')
-                .upsert([{ notes: classes, id: user.data.user.id }])
+                .upsert([{ notes: CryptoJS.encrypt(secret, JSON.stringify(classes)), id: user.data.user.id }])
                 .select();
 
             if (error) {
@@ -565,7 +594,7 @@
                                     ${note.cues.map(cue => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-blue-600 mt-1">•</span>
-                                            <textarea class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
+                                            <textarea id="editor" class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
@@ -582,7 +611,7 @@
                                     ${note.notes.map(noteText => `
                                         <div class="flex items-start gap-2">
                                             <span class="text-gray-600 mt-1">•</span>
-                                            <textarea class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
+                                            <textarea id="editor" class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
                                             <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
                                         </div>
                                     `).join('')}
