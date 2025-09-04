@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notefy</title>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.all.min.js"></script>
     <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=61e149774ef749af85e101d235490606"></script>
-    <link href="
-https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
-" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css" rel="stylesheet">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -374,7 +374,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             elt.style.width = "100%";
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
-            
+
             var del = document.createElement("button");
             del.innerHTML = "Delete Graph"
             del.style.background = "maroon"
@@ -389,8 +389,8 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
 
             const note = classObj.notes.find(n => n.id === currentNoteId);
             if (!note) return;
-                
-            calcs.push({id: note.id, calculator: calculator})
+
+            calcs.push({ id: note.id, calculator: calculator })
         }
         function loadgraph(data) {
             const notesContent = document.getElementById('notesContent');
@@ -606,7 +606,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             else {
                 note.graphs = [];
             }
-                currentNoteId = note.id;
+            currentNoteId = note.id;
 
         }
 
@@ -622,11 +622,16 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-blue-600 mt-1">•</span>
-                <textarea placeholder="Add a cue or question..." 
+                <textarea id="editor" placeholder="Add a cue or question..." 
                        class="border-none outline-none bg-transparent" 
                        onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
+            tinymce.init({
+                selector: '#editor',  // Targets the textarea with the ID "editor"
+                plugins: 'advlist autolink lists link image charmap print preview anchor',
+                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent'
+            });
             cueContent.appendChild(bullet);
             bullet.querySelector('textarea').focus();
         }
@@ -637,12 +642,18 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             bullet.className = 'flex items-start gap-2';
             bullet.innerHTML = `
                 <span class="text-gray-600 mt-1">•</span>
-                <textarea placeholder="Add a note..." 
+                <textarea id="editor" placeholder="Add a note..." 
                        class=" border-none outline-none bg-transparent" 
                        onchange="autoSave()"></textarea>
                 <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
             `;
+
             notesContent.appendChild(bullet);
+            tinymce.init({
+                selector: '#editor',  // Targets the textarea with the ID "editor"
+                plugins: 'advlist autolink lists link image charmap print preview anchor',
+                toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent'
+            });
             bullet.querySelector('textarea').focus();
             setupAutoresize();
         }
@@ -678,14 +689,14 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             if (cueTextareas.length > 0) {
                 note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-            
+
             if (noteTextareas.length > 0) {
                 note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
             }
-             if (graphs.length > 0) {
+            if (graphs.length > 0) {
                 note.graphs = [];
                 calcs.forEach(calc => {
-                    if(calc.id === currentNoteId){
+                    if (calc.id === currentNoteId) {
                         note.graphs.push(calc.calculator.getState())
                     }
                 })
@@ -876,86 +887,86 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-           
+
             classObj.notes.forEach((note, index) => {
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
-                }const doc = new jsPDF();
+                } const doc = new jsPDF();
 
-            // Header
-            doc.setFontSize(18);
-            doc.text(note.title || 'Untitled Note', 20, 30);
+                // Header
+                doc.setFontSize(18);
+                doc.text(note.title || 'Untitled Note', 20, 30);
 
-            doc.setFontSize(12);
-            doc.text(`Class: ${classObj.name}`, 20, 45);
-            doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
+                doc.setFontSize(12);
+                doc.text(`Class: ${classObj.name}`, 20, 45);
+                doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
 
-            let yPosition = 75;
+                let yPosition = 75;
 
-            // Cornell Note Layout
-            doc.setFontSize(14);
-            doc.text('Cornell Notes', 20, yPosition);
-            yPosition += 15;
+                // Cornell Note Layout
+                doc.setFontSize(14);
+                doc.text('Cornell Notes', 20, yPosition);
+                yPosition += 15;
 
-            // Draw Cornell layout lines
-            doc.line(20, yPosition, 190, yPosition); // Top line
-            doc.line(20, yPosition, 20, yPosition + 120); // Left line
-            doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
-            doc.line(190, yPosition, 190, yPosition + 120); // Right line
-            doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
-            doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
+                // Draw Cornell layout lines
+                doc.line(20, yPosition, 190, yPosition); // Top line
+                doc.line(20, yPosition, 20, yPosition + 120); // Left line
+                doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
+                doc.line(190, yPosition, 190, yPosition + 120); // Right line
+                doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
+                doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
 
-            // Cues section
-            doc.setFontSize(10);
-            doc.text('Cues & Questions', 22, yPosition + 8);
+                // Cues section
+                doc.setFontSize(10);
+                doc.text('Cues & Questions', 22, yPosition + 8);
 
-            let cueY = yPosition + 18;
-            if (note.cues && note.cues.length > 0) {
-                note.cues.forEach(cue => {
-                    if (cueY < yPosition + 85) {
-                        const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
-                        cueLines.forEach(line => {
-                            if (cueY < yPosition + 85) {
-                                doc.text(line, 22, cueY);
-                                cueY += 5;
-                            }
-                        });
-                    }
-                });
-            }
+                let cueY = yPosition + 18;
+                if (note.cues && note.cues.length > 0) {
+                    note.cues.forEach(cue => {
+                        if (cueY < yPosition + 85) {
+                            const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
+                            cueLines.forEach(line => {
+                                if (cueY < yPosition + 85) {
+                                    doc.text(line, 22, cueY);
+                                    cueY += 5;
+                                }
+                            });
+                        }
+                    });
+                }
 
-            // Notes section
-            doc.text('Notes', 72, yPosition + 8);
+                // Notes section
+                doc.text('Notes', 72, yPosition + 8);
 
-            let notesY = yPosition + 18;
-            if (note.notes && note.notes.length > 0) {
-                note.notes.forEach(noteText => {
-                    if (notesY < yPosition + 85) {
-                        const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
-                        noteLines.forEach(line => {
-                            if (notesY < yPosition + 85) {
-                                doc.text(line, 72, notesY);
-                                notesY += 5;
-                            }
-                        });
-                    }
-                });
-            }
+                let notesY = yPosition + 18;
+                if (note.notes && note.notes.length > 0) {
+                    note.notes.forEach(noteText => {
+                        if (notesY < yPosition + 85) {
+                            const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
+                            noteLines.forEach(line => {
+                                if (notesY < yPosition + 85) {
+                                    doc.text(line, 72, notesY);
+                                    notesY += 5;
+                                }
+                            });
+                        }
+                    });
+                }
 
-            // Summary section
-            doc.text('Summary', 22, yPosition + 98);
+                // Summary section
+                doc.text('Summary', 22, yPosition + 98);
 
-            if (note.summary && note.summary.trim()) {
-                const summaryLines = doc.splitTextToSize(note.summary, 165);
-                let summaryY = yPosition + 108;
-                summaryLines.forEach(line => {
-                    if (summaryY < yPosition + 118) {
-                        doc.text(line, 22, summaryY);
-                        summaryY += 5;
-                    }
-                });
-            }
+                if (note.summary && note.summary.trim()) {
+                    const summaryLines = doc.splitTextToSize(note.summary, 165);
+                    let summaryY = yPosition + 108;
+                    summaryLines.forEach(line => {
+                        if (summaryY < yPosition + 118) {
+                            doc.text(line, 22, summaryY);
+                            summaryY += 5;
+                        }
+                    });
+                }
 
             });
 
