@@ -374,6 +374,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
         function addgraph() {
             const notesContent = document.getElementById('notesContent');
             var elt = document.createElement("div");
+            elt.id = "desmos"
             elt.style.height = "200px";
             elt.style.width = "100%";
             notesContent.appendChild(elt);
@@ -400,6 +401,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             const notesContent = document.getElementById('notesContent');
             var elt = document.createElement("div");
             elt.style.height = "200px";
+            elt.id = "desmos";
             elt.style.width = "100%";
             notesContent.appendChild(elt);
             var calculator = Desmos.GraphingCalculator(elt);
@@ -673,9 +675,9 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css
             if (dateEl) note.date = dateEl.value;
             if (summaryEl) note.summary = summaryEl.value;
 
-            const cueTextareas = document.querySelectorAll('#cueContent textarea');
-            const noteTextareas = document.querySelectorAll('#notesContent textarea');
-            const graphs = document.querySelectorAll('#notesContent div');
+            const cueTextareas = document.querySelectorAll('#cueContent #editor');
+            const noteTextareas = document.querySelectorAll('#notesContent #editor');
+            const graphs = document.querySelectorAll('#notesContent #desmos');
 
 
             if (cueTextareas.length > 0) {
