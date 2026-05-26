@@ -1,1110 +1,1220 @@
-<!DOCTYPE html>
-<html lang="en">
 
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notefy</title>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <title>Voxtral Note Studio & Infographic Generator</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.all.min.js"></script>
-    <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=61e149774ef749af85e101d235490606"></script>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.5/dist/sweetalert2.min.css" rel="stylesheet">
-
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0b0f19;
+            color: #f1f5f9;
         }
 
-        .cornell-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 1px;
-            background: #e5e7eb;
-            min-height: 400px;
-            overflow-y: scroll;
+        .serif-font {
+            font-family: 'Playfair Display', serif;
         }
 
-        .flex-1 {
-            overflow-y: auto;
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .cue-column {
-            grid-column: 1;
-            grid-row: 2;
-            overflow-y: visible;
+        .glass-panel-light {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .notes-column {
-            grid-column: 2;
-            grid-row: 2;
-            overflow-y: visible;
+        /* Waveform Animation */
+        .wave-bar {
+            animation: quiet 1.2s ease-in-out infinite alternate;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.5s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.1s; }
+
+        @keyframes quiet {
+            0% { height: 4px; }
+            100% { height: 32px; }
         }
 
-        .summary-section {
-            grid-column: 1 / -1;
-            grid-row: 3;
-            overflow-y: visible;
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
         }
 
-        .header-section {
-            grid-column: 1 / -1;
-            grid-row: 1;
-            overflow-y: visible;
+        /* Mindmap SVG Connection Line Styling */
+        .mindmap-link {
+            stroke-dasharray: 4;
+            animation: dash 30s linear infinite;
         }
 
-        textarea {
-            width: 100%;
-            height: auto;
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
         }
     </style>
 </head>
+<body class="h-full flex flex-col antialiased">
 
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Notefy</h1>
-            <button onclick="addClass()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                + Add Class
-            </button>
-            <button onclick="logout()"
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Sign Out
-            </button>
-        </div>
-
-        <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        </div>
-
-        <div id="emptyState" class="text-center py-12 text-gray-500">
-            <div class="text-6xl mb-4">📚</div>
-            <h3 class="text-xl font-medium mb-2">No classes yet</h3>
-            <p>Click "Add Class" to create your first Cornell notes</p>
-        </div>
-    </div>
-
-    <div id="classModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-96 mx-4">
-            <h3 class="text-lg font-semibold mb-4">Add New Class</h3>
-            <input type="text" id="classNameInput" placeholder="Class name (e.g., Biology 101)"
-                class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <div class="flex gap-3">
-                <button onclick="saveClass()"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
-                    Create Class
-                </button>
-                <button onclick="closeModal()"
-                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="deleteClassModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-96 mx-4">
-            <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Class</h3>
-            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteClassName"></span>" and all
-                its notes? This action cannot be undone.</p>
-            <div class="flex gap-3">
-                <button onclick="confirmDeleteClass()"
-                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
-                    Delete Class
-                </button>
-                <button onclick="closeDeleteClassModal()"
-                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="deleteNoteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-96 mx-4">
-            <h3 class="text-lg font-semibold mb-4 text-red-600">Delete Note</h3>
-            <p class="text-gray-700 mb-4">Are you sure you want to delete "<span id="deleteNoteName"></span>"? This
-                action cannot be undone.</p>
-            <div class="flex gap-3">
-                <button onclick="confirmDeleteNote()"
-                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium">
-                    Delete Note
-                </button>
-                <button onclick="closeDeleteNoteModal()"
-                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="noteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
-            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 id="noteModalTitle" class="text-lg font-semibold">Taking Notes</h3>
-                <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-            </div>
-
-            <div class="flex-1 p-4">
-                <div class="cornell-grid h-full">
-                    <div class="header-section bg-white p-4">
-                        <input type="text" id="noteTitle" placeholder="Note title..."
-                            class="w-full text-lg font-medium border-none outline-none bg-transparent">
-                        <input type="text" id="noteDate" placeholder="Date..."
-                            class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
-                    </div>
-
-                    <div class="cue-column bg-white p-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-medium text-gray-700">Cues & Questions</h4>
-                            <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+
-                                Bullet</button>
-                        </div>
-                        <div id="cueContent" class="space-y-2">
-                        </div>
-                    </div>
-
-                    <div class="notes-column bg-white p-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-medium text-gray-700">Notes</h4>
-                            <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+
-                                Bullet</button>
-                        </div>
-                        <div id="notesContent" class="space-y-2">
-                        </div>
-                    </div>
-
-                    <div class="summary-section bg-white p-4">
-                        <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
-                        <textarea id="summaryContent" placeholder="Write a summary of your notes..."
-                            class="w-full h-20 resize-none border-none outline-none bg-transparent"></textarea>
-                    </div>
+    <!-- Top Navigation Bar -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 border-b border-indigo-500/10">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center">
+                    <i data-lucide="waves" class="w-6 h-6 text-white animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg tracking-wider bg-gradient-to-r from-white via-indigo-100 to-violet-400 bg-clip-text text-transparent">VOXTRAL NOTE STUDIO</h1>
+                    <p class="text-[10px] text-indigo-400 font-semibold tracking-widest uppercase">Mistral AI Transcribe & Visualizer</p>
                 </div>
             </div>
+
+            <!-- API Key & Action Center -->
+            <div class="flex items-center space-x-3">
+                <button id="btn-api-settings" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 transition-all">
+                    <i data-lucide="key" class="w-4 h-4"></i>
+                    <span id="api-status-badge">Set Mistral API Key</span>
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <script>
-        const { createClient } = supabase;
+    <!-- App Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6 overflow-hidden">
+        
+        <!-- Left Column: Audio Center, Recording & History -->
+        <section class="w-full lg:w-96 flex flex-col gap-5 flex-shrink-0">
+            
+            <!-- Recording & Audio Import Console -->
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-4 relative overflow-hidden group">
+                <div class="absolute -right-16 -top-16 w-32 h-32 bg-violet-600/10 rounded-full blur-2xl"></div>
+                <div class="absolute -left-16 -bottom-16 w-32 h-32 bg-indigo-600/10 rounded-full blur-2xl"></div>
+                
+                <h2 class="font-bold text-sm tracking-wide text-slate-300 uppercase flex items-center gap-2">
+                    <i data-lucide="mic" class="w-4 h-4 text-indigo-400"></i>
+                    Audio Capture Desk
+                </h2>
 
-        var classes = [];
-        var secret;
-
-        var login;
-
-        var id;
-        const supa = createClient('https://mxxrkkvduantjngmafjc.supabase.co', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14eHJra3ZkdWFudGpuZ21hZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4MDg1NTMsImV4cCI6MjA3MjM4NDU1M30.zgcbIIFYWg897oRzw7xonwUqVslQp0HEKIYEz4zmaBs");
-        var user;
-        function logout() {
-            localStorage.removeItem("username")
-            localStorage.removeItem("password")
-            location.reload();
-        }
-        setTimeout(async () => {
-
-            if (localStorage.getItem("username")) {
-                if (localStorage.getItem("secret")) {
-                    secret = localStorage.getItem("secret")
-                }
-                else {
-                    secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally UNTIL you sign out");
-                    localStorage.setItem("secret", secret)
-                }
-                const { data, error } = await supa.auth.signInWithPassword({
-                    email: localStorage.getItem("username"),
-                    password: localStorage.getItem("password"),
-                })
-                user = await supa.auth.getUser()
-                classes = (await supa
-                    .from('notes')
-                    .select('notes')
-                    .eq("id", user.data.user.id)
-                ).data[0].notes;
-                try {
-                    classes = JSON.parse(CryptoJS.AES.decrypt(classes, secret).toString(CryptoJS.enc.Utf8));
-                }
-                catch {
-                    classes = JSON.parse(classes);
-
-                }
-
-
-                await renderClasses();
-            }
-            else {
-
-                login = await Swal.fire({
-                    title: 'Login Form',
-                    html: `
-    <input type="email" id="username" class="swal2-input" placeholder="Email">
-    <input type="password" id="password" class="swal2-input" placeholder="Password">
-    <input type="checkbox" id="save" class="swal2-input"><p>Save Login?</p>
-  `,
-                    confirmButtonText: 'Sign in',
-                    focusConfirm: false,
-                    didOpen: () => {
-                        const popup = Swal.getPopup()
-                        usernameInput = popup.querySelector('#username')
-                        passwordInput = popup.querySelector('#password')
-                        usernameInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-                        passwordInput.onkeyup = (event) => event.key === 'Enter' && Swal.clickConfirm()
-                    },
-                    preConfirm: () => {
-                        if (document.querySelector("#save").checked) {
-                            localStorage.setItem("username", usernameInput.value)
-                            localStorage.setItem("password", passwordInput.value)
-                        }
-                        const username = usernameInput.value
-                        const password = passwordInput.value
-                        if (!username || !password) {
-                            Swal.showValidationMessage(`Please enter username and password`)
-                        }
-                        return { username, password }
-                    },
-                })
-                const { data, error } = await supa.auth.signInWithPassword({
-                    email: login.value.username,
-                    password: login.value.password,
-                })
-
-                if (error) {
-                    const { data, error } = await supa.auth.signUp({
-                        email: login.value.username,
-                        password: login.value.password,
-                    })
-                    user = await supa.auth.getUser()
-                    secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally");
-                    localStorage.setItem("secret", secret);
-                }
-                else {
-                    if (localStorage.getItem("secret")) {
-                        secret = localStorage.getItem("secret")
-                    }
-                    else {
-                        secret = prompt("Choose a passphrase to encrypt your data. You CANNOT change this, so remember it and make it secure. Just in case, it will be stored locally UNTIL you sign out");
-                        localStorage.setItem("secret", secret)
-                    }
-
-                    user = await supa.auth.getUser()
-                    classes = (await supa
-                        .from('notes')
-                        .select('notes')
-                        .eq("id", user.data.user.id)
-                    ).data[0].notes;
-                    try {
-                        classes = JSON.parse(CryptoJS.AES.decrypt(classes, secret).toString(CryptoJS.enc.Utf8));
-                    }
-                    catch {
-                        classes = JSON.parse(classes);
-
-                    }
-
-
-                    await renderClasses();
-
-
-                }
-            }
-
-        }, 10)
-
-
-        function setupAutoresize() {
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('input', e => {
-                    e.target.style.height = 'auto';
-                    e.target.style.height = e.target.scrollHeight + 'px';
-                    autoSave(); // Call autoSave after resize
-                });
-                // Initial resize on load
-                textarea.style.height = 'auto';
-                textarea.style.height = textarea.scrollHeight + 'px';
-            });
-        }
-        let currentClassId = null;
-        let currentNoteId = null;
-        let deleteClassId = null;
-        let deleteNoteId = null;
-
-        // New variables for audio recording
-        let recognition;
-        let isTranscribing = false;
-
-        async function saveClasses() {
-            const { data, error } = await supa
-                .from('notes')
-                .upsert([{ notes: CryptoJS.AES.encrypt(JSON.stringify(classes), secret).toString(), id: user.data.user.id }])
-                .select();
-
-            if (error) {
-                console.error('Error saving classes:', error);
-            }
-        }
-
-        function addClass() {
-            document.getElementById('classModal').classList.remove('hidden');
-            document.getElementById('classModal').classList.add('flex');
-            document.getElementById('classNameInput').focus();
-        }
-
-        function closeModal() {
-            document.getElementById('classModal').classList.add('hidden');
-            document.getElementById('classModal').classList.remove('flex');
-            document.getElementById('classNameInput').value = '';
-        }
-
-        async function saveClass() {
-            const className = document.getElementById('classNameInput').value.trim();
-            if (!className) return;
-
-            const newClass = {
-                id: Date.now(),
-                name: className,
-                notes: []
-            };
-
-            classes.push(newClass);
-            await saveClasses();
-            await renderClasses();
-            closeModal();
-        }
-
-        async function deleteClass(classId) {
-            deleteClassId = classId;
-            const classObj = classes.find(c => c.id === classId);
-            document.getElementById('deleteClassName').textContent = classObj.name;
-            document.getElementById('deleteClassModal').classList.remove('hidden');
-            document.getElementById('deleteClassModal').classList.add('flex');
-        }
-
-        function closeDeleteClassModal() {
-            document.getElementById('deleteClassModal').classList.add('hidden');
-            document.getElementById('deleteClassModal').classList.remove('flex');
-            deleteClassId = null;
-        }
-
-        async function confirmDeleteClass() {
-            if (deleteClassId) {
-                classes = classes.filter(c => c.id !== deleteClassId);
-                await saveClasses();
-                await renderClasses();
-                closeDeleteClassModal();
-            }
-        }
-
-        function openNotes(classId) {
-            currentClassId = classId;
-            const classObj = classes.find(c => c.id === classId);
-            showNotesView(classObj);
-        }
-        var calcs = [];
-        function addgraph() {
-            const notesContent = document.getElementById('notesContent');
-            var elt = document.createElement("div");
-            elt.style.height = "200px";
-            elt.style.width = "100%";
-            notesContent.appendChild(elt);
-            var calculator = Desmos.GraphingCalculator(elt);
-
-            var del = document.createElement("button");
-            del.innerHTML = "Delete Graph"
-            del.style.background = "maroon"
-            del.style.color = "white"
-            del.onclick = () => {
-                elt.remove();
-                del.parentNode.removeChild(del);
-            }
-            notesContent.appendChild(del);
-            const classObj = classes.find(c => c.id === currentClassId);
-            if (!classObj) return;
-
-            const note = classObj.notes.find(n => n.id === currentNoteId);
-            if (!note) return;
-
-            calcs.push({ id: note.id, calculator: calculator })
-        }
-        function loadgraph(data) {
-            const notesContent = document.getElementById('notesContent');
-            var elt = document.createElement("div");
-            elt.style.height = "200px";
-            elt.style.width = "100%";
-            notesContent.appendChild(elt);
-            var calculator = Desmos.GraphingCalculator(elt);
-            calculator.setState(data)
-            var del = document.createElement("button");
-            del.innerHTML = "Delete Graph"
-            del.style.background = "maroon"
-            del.style.color = "white"
-            del.onclick = () => {
-                elt.remove();
-                del.parentNode.removeChild(del);
-            }
-            notesContent.appendChild(del);
-        }
-        function showNotesView(classObj) {
-            const noteModal = document.getElementById('noteModal');
-            noteModal.innerHTML = `
-                <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">${classObj.name} - Notes</h3>
-                        <div class="flex gap-2">
-                            <button onclick="exportClassToPDF()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
-                                📄 Export PDF
-                            </button>
-                            <button onclick="createNewNote()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-                                + New Note
-                            </button>
-                            <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                        </div>
-                    </div>
+                <!-- Microphone Recording Widget -->
+                <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 flex flex-col items-center justify-center gap-4 min-h-[170px]">
                     
-                    <div class="flex-1 p-4 overflow-y-auto">
-                        <div id="notesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            ${renderNotesList(classObj)}
+                    <!-- Waveform Animation -->
+                    <div id="recording-wave" class="hidden flex items-end justify-center gap-1.5 h-10 w-full mb-2">
+                        <span class="wave-bar w-1 bg-indigo-500 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-violet-400 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-indigo-400 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-purple-500 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-indigo-500 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-violet-500 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-purple-400 rounded-full"></span>
+                        <span class="wave-bar w-1 bg-indigo-400 rounded-full"></span>
+                    </div>
+
+                    <!-- Idle Mic Icon -->
+                    <div id="recording-idle" class="flex flex-col items-center">
+                        <div class="p-4 bg-indigo-950/40 rounded-full border border-indigo-500/20 text-indigo-400 mb-2">
+                            <i data-lucide="mic" class="w-8 h-8"></i>
                         </div>
-                        
-                        <div id="emptyNotes" class="text-center py-12 text-gray-500 ${classObj.notes && classObj.notes.length > 0 ? 'hidden' : ''}">
-                            <div class="text-4xl mb-4">📝</div>
-                            <h3 class="text-lg font-medium mb-2">No notes yet</h3>
-                            <p>Click "New Note" to create your first Cornell note</p>
-                        </div>
+                        <span class="text-xs text-slate-400 text-center">Ready to record notes</span>
                     </div>
-                </div>
-            `;
 
-            noteModal.classList.remove('hidden');
-            noteModal.classList.add('flex');
-        }
+                    <!-- Timer -->
+                    <div id="record-timer" class="hidden text-sm font-mono text-slate-300 tracking-wider">00:00</div>
 
-        function renderNotesList(classObj) {
-            if (!classObj.notes || classObj.notes.length === 0) return '';
-
-            return classObj.notes.map(note => `
-                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="font-medium text-gray-800 truncate">${note.title || 'Untitled Note'}</h4>
-                        <button  class="text-gray-400 hover:text-red-500 transition-colors">
-                            <svg onclick="deleteNote(${note.id})" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 102 0v3a1 1 0 11-2 0V9zm4 0a1 1 0 10-2 0v3a1 1 0 102 0V9z" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-3">${note.date || ''}</p>
-                    <div class="text-xs text-gray-500 mb-3">
-                        ${note.cues ? note.cues.length : 0} cues • ${note.notes ? note.notes.length : 0} notes
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="editNote(${note.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm font-medium">
-                            Open Note
-                        </button>
-                        <button onclick="event.stopPropagation(); exportNoteToPDF(${note.id})" class="bg-green-600 hover:bg-green-700 text-white py-2 px-2 rounded text-sm font-medium" title="Export to PDF">
-                            📄
+                    <!-- Capture Action Controls -->
+                    <div class="flex items-center gap-3 w-full">
+                        <button id="btn-record-toggle" class="flex-1 py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:scale-95 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-950/40 flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="circle" id="mic-icon" class="w-4 h-4 text-red-500 fill-red-500"></i>
+                            <span id="record-btn-text">Start Voice Rec</span>
                         </button>
                     </div>
                 </div>
-            `).join('');
-        }
 
-        function closeNoteModal() {
-            document.getElementById('noteModal').classList.add('hidden');
-            document.getElementById('noteModal').classList.remove('flex');
-        }
+                <!-- Divider -->
+                <div class="flex items-center my-1 text-[11px] text-slate-500 font-bold uppercase tracking-widest">
+                    <span class="flex-1 h-px bg-slate-800 mr-2"></span>
+                    OR
+                    <span class="flex-1 h-px bg-slate-800 ml-2"></span>
+                </div>
 
-        async function createNewNote() {
-            const newNote = {
-                id: Date.now(),
-                title: '',
-                date: new Date().toLocaleDateString(),
-                cues: [],
-                notes: [],
-                graphs: [],
-                summary: []
-            };
+                <!-- File Uploader -->
+                <label class="cursor-pointer group flex flex-col items-center justify-center border border-dashed border-slate-700 hover:border-indigo-500/50 bg-slate-950/40 hover:bg-slate-900/40 py-4 px-3 rounded-xl transition-all">
+                    <input type="file" id="audio-file-input" accept="audio/*" class="hidden">
+                    <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-400 group-hover:text-indigo-400 transition-colors mb-1"></i>
+                    <span class="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors">Import Recorded Audio File</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Accepts MP3, M4A, WAV, WEBM, FLAC</span>
+                    <span id="uploaded-file-name" class="hidden text-xs text-indigo-400 mt-1 truncate max-w-full"></span>
+                </label>
+            </div>
 
-            const classObj = classes.find(c => c.id === currentClassId);
-            if (!classObj.notes) classObj.notes = [];
-            classObj.notes.push(newNote);
-            await saveClasses();
+            <!-- Notes List / Archive -->
+            <div class="glass-panel p-5 rounded-2xl flex-1 flex flex-col gap-3 min-h-[300px] overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-sm tracking-wide text-slate-300 uppercase flex items-center gap-2">
+                        <i data-lucide="folder-heart" class="w-4 h-4 text-indigo-400"></i>
+                        Saved Note Studio
+                    </h2>
+                    <span id="notes-count" class="text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-0.5 font-bold rounded-full">0</span>
+                </div>
 
-            editNote(newNote.id);
-        }
+                <!-- Search and Filter -->
+                <div class="relative">
+                    <input type="text" id="search-notes" placeholder="Filter saved logs..." class="w-full bg-slate-950/60 border border-slate-800 text-xs text-white rounded-lg pl-8 pr-3 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none placeholder-slate-500">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5"></i>
+                </div>
 
-        function editNote(noteId) {
-            const classObj = classes.find(c => c.id === currentClassId);
-            const note = classObj.notes.find(n => n.id === noteId);
-
-            showNoteEditor(note);
-        }
-
-        async function deleteNote(noteId) {
-            deleteNoteId = noteId;
-            const classObj = classes.find(c => c.id === currentClassId);
-            const note = classObj.notes.find(n => n.id === noteId);
-            document.getElementById('deleteNoteName').textContent = note.title || 'Untitled Note';
-            document.getElementById('deleteNoteModal').classList.remove('hidden');
-            document.getElementById('deleteNoteModal').classList.add('flex');
-        }
-
-        function closeDeleteNoteModal() {
-            document.getElementById('deleteNoteModal').classList.add('hidden');
-            document.getElementById('deleteNoteModal').classList.remove('flex');
-            deleteNoteId = null;
-        }
-
-        async function confirmDeleteNote() {
-            if (deleteNoteId && currentClassId) {
-                const classObj = classes.find(c => c.id === currentClassId);
-                classObj.notes = classObj.notes.filter(n => n.id !== deleteNoteId);
-                await saveClasses();
-                showNotesView(classObj);
-                closeDeleteNoteModal();
-            }
-        }
-
-        function showNoteEditor(note) {
-            const noteModal = document.getElementById('noteModal');
-            noteModal.innerHTML = `
-                <div class="bg-white rounded-lg w-full h-full m-4 flex flex-col">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">Editing Note</h3>
-                        <div class="flex gap-2">
-                            <button onclick="backToNotesList()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium">
-                                ← Back
-                            </button>
-                            <button id="transcribeButton" onclick="toggleTranscription()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium">
-                                🎙️ Start Transcription
-                            </button>
-                            <button onclick="closeNoteModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1 p-4">
-                        <div class="cornell-grid h-full">
-                            <div class="header-section bg-white p-4">
-                                <input type="text" id="noteTitle" placeholder="Note title..." value="${note.title || ''}"
-                                       class="w-full text-lg font-medium border-none outline-none bg-transparent">
-                                <input type="text" id="noteDate" placeholder="Date..." value="${note.date || ''}"
-                                       class="w-full text-sm text-gray-600 border-none outline-none bg-transparent mt-1">
-                            </div>
-                            
-                            <div class="cue-column bg-white p-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="font-medium text-gray-700">Cues & Questions</h4>
-                                    <button onclick="addCueBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
-                                </div>
-                                <div id="cueContent" class="space-y-2">
-                                    ${note.cues.map(cue => `
-                                        <div class="flex items-start gap-2">
-                                            <span class="text-blue-600 mt-1">•</span>
-                                            <textarea id="editor" class="border-none outline-none bg-transparent" onchange="autoSave()">${cue}</textarea>
-                                            <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <div class="notes-column bg-white p-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="font-medium text-gray-700">Notes</h4>
-                                    <button onclick="addNoteBullet()" class="text-blue-600 hover:text-blue-700 text-sm">+ Bullet</button>
-                                    <button onclick="addgraph()" class="text-blue-600 hover:text-blue-700 text-sm">+ Graph</button>
-                                </div>
-                                <div id="notesContent" class="space-y-2">
-                                    ${note.notes.map(noteText => `
-                                        <div class="flex items-start gap-2">
-                                            <span class="text-gray-600 mt-1">•</span>
-                                            <textarea id="editor" class=" border-none outline-none bg-transparent" onchange="autoSave()">${noteText}</textarea>
-                                            <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <div class="summary-section bg-white p-4">
-                                <h4 class="font-medium text-gray-700 mb-3">Summary</h4>
-                                <textarea id="summaryContent" placeholder="Write a summary of your notes..." 
-                                          class="w-full h-20 resize-none border-none outline-none bg-transparent">${note.summary || ''}</textarea>
-                            </div>
-                        </div>
+                <!-- Scrollable List of Notes -->
+                <div id="notes-list-container" class="flex-1 overflow-y-auto pr-1 flex flex-col gap-2.5 max-h-[450px]">
+                    <!-- Dynamic Items will render here -->
+                    <div id="no-notes-view" class="flex flex-col items-center justify-center py-10 text-slate-500">
+                        <i data-lucide="clipboard-list" class="w-8 h-8 mb-2 opacity-45"></i>
+                        <p class="text-xs font-medium">No notes created yet</p>
+                        <p class="text-[10px] text-center px-4 mt-1">Record audio or upload a voice memo to unlock beautiful auto-infographics!</p>
                     </div>
                 </div>
-            `;
-            if (note.graphs) {
-                note.graphs.forEach(state => {
-                    loadgraph(state);
-                });
-            }
-            else {
-                note.graphs = [];
-            }
-            currentNoteId = note.id;
-            setTimeout(()=>{
-                const editor = new EditorJS({
-  /**
-   * Id of Element that should contain the Editor
-   */
-  holderId : 'editor'
-})
-},50)
+            </div>
+        </section>
 
-
-
-        }
-
-        async function backToNotesList() {
-            await saveCurrentNote();
-            const classObj = classes.find(c => c.id === currentClassId);
-            showNotesView(classObj);
-        }
-
-        function addCueBullet() {
-            const cueContent = document.getElementById('cueContent');
-            const bullet = document.createElement('div');
-            bullet.className = 'flex items-start gap-2';
-            bullet.innerHTML = `
-                <span class="text-blue-600 mt-1">•</span>
-                <textarea id="editor" placeholder="Add a cue or question..." 
-                       class="border-none outline-none bg-transparent" 
-                       onchange="autoSave()"></textarea>
-                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
-            `;
-            const editor = new EditorJS({
-  /**
-   * Id of Element that should contain the Editor
-   */
-  holderId : 'editor'
-})
-
-            cueContent.appendChild(bullet);
-            bullet.querySelector('textarea').focus();
-        }
-
-        function addNoteBullet() {
-            const notesContent = document.getElementById('notesContent');
-            const bullet = document.createElement('div');
-            bullet.className = 'flex items-start gap-2';
-            bullet.innerHTML = `
-                <span class="text-gray-600 mt-1">•</span>
-                <textarea id="editor" placeholder="Add a note..." 
-                       class=" border-none outline-none bg-transparent" 
-                       onchange="autoSave()"></textarea>
-                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
-            `;
-
-            notesContent.appendChild(bullet);
-            const editor = new EditorJS({
-  /**
-   * Id of Element that should contain the Editor
-   */
-  holderId : 'editor'})
-
-            bullet.querySelector('textarea').focus();
-            setupAutoresize();
-        }
-
-        function autoSave() {
-            if (currentClassId) {
-                setTimeout(saveCurrentNote, 100);
-            }
-        }
-
-        async function saveCurrentNote() {
-            if (!currentClassId || !currentNoteId) return;
-
-            const classObj = classes.find(c => c.id === currentClassId);
-            if (!classObj) return;
-
-            const note = classObj.notes.find(n => n.id === currentNoteId);
-            if (!note) return;
-
-            const titleEl = document.getElementById('noteTitle');
-            const dateEl = document.getElementById('noteDate');
-            const summaryEl = document.getElementById('summaryContent');
-
-            if (titleEl) note.title = titleEl.value;
-            if (dateEl) note.date = dateEl.value;
-            if (summaryEl) note.summary = summaryEl.value;
-
-            const cueTextareas = document.querySelectorAll('#cueContent textarea');
-            const noteTextareas = document.querySelectorAll('#notesContent textarea');
-            const graphs = document.querySelectorAll('#notesContent div');
-
-
-            if (cueTextareas.length > 0) {
-                note.cues = Array.from(cueTextareas).map(textarea => textarea.value).filter(v => v.trim());
-            }
-
-            if (noteTextareas.length > 0) {
-                note.notes = Array.from(noteTextareas).map(textarea => textarea.value).filter(v => v.trim());
-            }
-            if (graphs.length > 0) {
-                note.graphs = [];
-                calcs.forEach(calc => {
-                    if (calc.id === currentNoteId) {
-                        note.graphs.push(calc.calculator.getState())
-                    }
-                })
-            }
-
-            await saveClasses();
-        }
-
-        async function renderClasses() {
-            const grid = document.getElementById('classesGrid');
-            const emptyState = document.getElementById('emptyState');
-
-
-            if (classes.length === 0) {
-                grid.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            grid.style.display = 'grid';
-            emptyState.style.display = 'none';
-
-            grid.innerHTML = classes.map(classObj => `
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">${classObj.name}</h3>
-                        <button onclick="event.stopPropagation(); deleteClass(${classObj.id})" 
-                                class="text-gray-400 hover:text-red-500 transition-colors">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 102 0v3a1 1 0 11-2 0V9zm4 0a1 1 0 10-2 0v3a1 1 0 102 0V9z" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
+        <!-- Right Column: Interactive Workspace -->
+        <section class="flex-1 flex flex-col gap-5 overflow-hidden">
+            
+            <!-- Note State Controller / Tab View -->
+            <div class="glass-panel p-2.5 rounded-xl flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <div id="current-note-indicator" class="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-xs font-bold text-indigo-300 tracking-wide max-w-[200px] sm:max-w-xs truncate">
+                        Editing: New Audio Stream
                     </div>
-                    
-                    <div class="text-sm text-gray-600 mb-4">
-                        ${classObj.notes && classObj.notes.length > 0 ?
-                    `<div class="flex items-center gap-2">
-                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                ${classObj.notes.length} note${classObj.notes.length === 1 ? '' : 's'}
-                            </div>` :
-                    `<div class="flex items-center gap-2">
-                                <span class="w-2 h-2 bg-gray-300 rounded-full"></span>
-                                No notes yet
-                            </div>`
-                }
-                    </div>
-                    
-                    <button onclick="openNotes(${classObj.id})" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors">
-                        Open Notes
+                </div>
+
+                <!-- View Switcher -->
+                <div class="flex bg-slate-950 rounded-lg p-1 border border-slate-800">
+                    <button id="tab-summary" class="px-3.5 py-1.5 text-xs font-bold rounded-md transition-all bg-indigo-600 text-white flex items-center gap-1.5">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                        Summary Document
+                    </button>
+                    <button id="tab-infographic" class="px-3.5 py-1.5 text-xs font-bold rounded-md transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        Interactive Infographic
+                    </button>
+                    <button id="tab-transcript" class="px-3.5 py-1.5 text-xs font-bold rounded-md transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+                        <i data-lucide="audio-lines" class="w-3.5 h-3.5"></i>
+                        Raw Transcript
                     </button>
                 </div>
-            `).join('');
-        }
+            </div>
 
-        // Auto-save on input changes
-        document.addEventListener('input', (e) => {
-            if (e.target.closest('#noteModal')) {
-                autoSave();
+            <!-- Active View Container -->
+            <div class="flex-1 glass-panel rounded-2xl p-5 flex flex-col overflow-y-auto relative min-h-[450px]">
+                
+                <!-- Loading State Overlay -->
+                <div id="workspace-loading" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="relative w-20 h-20 mb-4">
+                        <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 animate-spin"></div>
+                    </div>
+                    <h3 id="loading-title" class="text-lg font-bold text-white mb-2">Transcribing Voice Track...</h3>
+                    <p id="loading-description" class="text-xs text-slate-400 max-w-sm">Generating lightning-fast offline speech to text with Mistral Voxtral Mini.</p>
+                </div>
+
+                <!-- Empty State Workspace -->
+                <div id="workspace-empty" class="flex-1 flex flex-col items-center justify-center text-center p-6 max-w-md mx-auto">
+                    <div class="w-20 h-20 bg-indigo-950/20 rounded-3xl border border-indigo-500/10 flex items-center justify-center mb-6 shadow-xl text-indigo-400">
+                        <i data-lucide="mic-vocal" class="w-10 h-10 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-white tracking-wide">Generate Rich Infographics from Spoken Notes</h3>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Simply tap "Start Voice Rec" on the left, speak your thoughts or capture a discussion, and watch Mistral build a visually striking, interactive dashboard with an executive summary.</p>
+                    <div class="mt-6 flex flex-wrap gap-2.5 justify-center">
+                        <button onclick="loadSampleNote()" class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-semibold rounded-lg border border-indigo-500/20 transition-all flex items-center gap-1.5">
+                            <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Load Sample Tech Lecture
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area: Summary Tab -->
+                <div id="content-summary" class="hidden flex-1 flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase">Formatted Executive Note</span>
+                            <h3 id="summary-title" class="text-xl font-extrabold text-white tracking-tight">Structured Document Title</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-copy-summary" class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors" title="Copy Raw Markdown">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic Summary HTML injected here -->
+                    <div id="summary-html-content" class="prose prose-invert max-w-none text-sm text-slate-300 space-y-4">
+                        <!-- Simulated interactive preview details -->
+                    </div>
+                </div>
+
+                <!-- Content Area: Infographic Tab -->
+                <div id="content-infographic" class="hidden flex-1 flex flex-col gap-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] text-violet-400 font-bold tracking-widest uppercase">Visual AI Canvas</span>
+                            <h3 id="infographic-title" class="text-xl font-extrabold text-white tracking-tight">Interactive Knowledge Graphic</h3>
+                        </div>
+                        <div class="text-[11px] bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 text-violet-400"></i> Tap nodes for description
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Metrics Block -->
+                    <div id="info-metrics-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Key metric indicators go here -->
+                    </div>
+
+                    <!-- Visual Section Split -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch flex-1">
+                        
+                        <!-- Concept Mind Map -->
+                        <div class="glass-panel-light p-4 rounded-xl flex flex-col min-h-[280px]">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <i data-lucide="git-fork" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                Relationship & Concept Map
+                            </h4>
+                            <div class="flex-1 bg-slate-950/80 rounded-lg relative overflow-hidden border border-slate-900/60 flex items-center justify-center min-h-[220px]">
+                                <!-- Mind map canvas / SVG overlay -->
+                                <svg id="mindmap-svg" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
+                                <div id="mindmap-nodes-layer" class="relative z-10 w-full h-full flex items-center justify-center">
+                                    <!-- Interactive nodes generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timelines or Phase Flowcharts -->
+                        <div class="glass-panel-light p-4 rounded-xl flex flex-col">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                <i data-lucide="list-todo" class="w-3.5 h-3.5 text-violet-400"></i>
+                                Critical Timeline & Next Steps
+                            </h4>
+                            <div id="infographic-timeline-flow" class="flex-1 flex flex-col gap-3 justify-center">
+                                <!-- Step-by-step visual tracker cards -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area: Raw Transcript Tab -->
+                <div id="content-transcript" class="hidden flex-1 flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] text-amber-400 font-bold tracking-widest uppercase">Raw Voxtral Speech-to-Text</span>
+                            <h3 id="transcript-header-title" class="text-xl font-extrabold text-white">Audio Transcript</h3>
+                        </div>
+                        <button id="btn-copy-transcript" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-slate-800 transition-colors">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Transcript
+                        </button>
+                    </div>
+                    <div class="flex-1 bg-slate-950/40 p-4 rounded-xl border border-slate-800 max-h-[380px] overflow-y-auto">
+                        <p id="transcript-text" class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                            No transcript loaded. Start recording or upload an audio clip!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modals & Lightbox Components -->
+    
+    <!-- API Settings Modal -->
+    <div id="api-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="w-full max-w-md glass-panel p-6 rounded-2xl border border-indigo-500/20 shadow-2xl relative">
+            <button id="btn-api-modal-close" class="absolute right-4 top-4 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                    <i data-lucide="key-round" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Mistral Credentials</h3>
+                    <p class="text-[11px] text-slate-400">Unlock automatic speech transcribing & summarization</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Mistral API Key</label>
+                    <input type="password" id="api-key-input" placeholder="eyJhbGciOi..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder-slate-600">
+                    <span class="text-[10px] text-slate-500 mt-1 block">Your API Key is saved locally on your device's browser and never leaves your secure direct queries.</span>
+                </div>
+
+                <div class="flex justify-between items-center bg-indigo-950/30 p-3 rounded-lg border border-indigo-500/10">
+                    <span class="text-xs font-semibold text-slate-300">Using standard models:</span>
+                    <span class="text-[10px] text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded">voxtral-mini & mistral-large-latest</span>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="btn-save-api" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg transition-colors">
+                        Apply Settings
+                    </button>
+                    <button id="btn-clear-api" class="px-3 py-2 bg-slate-900 hover:bg-red-950/40 text-slate-400 hover:text-red-400 text-xs font-bold rounded-lg transition-colors">
+                        Clear Key
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Overlay Tooltip Modal for Mind Map nodes -->
+    <div id="node-detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="w-full max-w-sm glass-panel p-5 rounded-xl border border-indigo-500/30 shadow-2xl relative">
+            <button onclick="closeNodeDetail()" class="absolute right-3 top-3 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <span id="node-modal-cat" class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Category</span>
+            <h4 id="node-modal-title" class="text-base font-bold text-white mt-2 mb-1">Node Title</h4>
+            <p id="node-modal-desc" class="text-xs text-slate-300 leading-relaxed">Detailed contextual description of this concept from the diagram...</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast Element -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 ease-out glass-panel px-4 py-3 rounded-xl border border-indigo-500/30 shadow-lg flex items-center space-x-2.5">
+        <div class="p-1 bg-indigo-500/20 text-indigo-400 rounded-lg">
+            <i id="toast-icon" data-lucide="info" class="w-4 h-4"></i>
+        </div>
+        <span id="toast-message" class="text-xs font-semibold text-white">Action successful</span>
+    </div>
+
+    <!-- App State Controller JavaScript -->
+    <script>
+        // App State
+        let apiKey = localStorage.getItem('MISTRAL_API_KEY') || '';
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingDuration = 0;
+        let timerInterval = null;
+        let audioBlob = null;
+        let notesList = [];
+        let currentNoteId = null;
+        let activeTab = 'summary'; // summary, infographic, transcript
+
+        // Elements
+        const btnApiSettings = document.getElementById('btn-api-settings');
+        const apiStatusBadge = document.getElementById('api-status-badge');
+        const apiModal = document.getElementById('api-modal');
+        const btnApiModalClose = document.getElementById('btn-api-modal-close');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const btnSaveApi = document.getElementById('btn-save-api');
+        const btnClearApi = document.getElementById('btn-clear-api');
+
+        const btnRecordToggle = document.getElementById('btn-record-toggle');
+        const recordBtnText = document.getElementById('record-btn-text');
+        const micIcon = document.getElementById('mic-icon');
+        const recordingWave = document.getElementById('recording-wave');
+        const recordingIdle = document.getElementById('recording-idle');
+        const recordTimer = document.getElementById('record-timer');
+        const audioFileInput = document.getElementById('audio-file-input');
+        const uploadedFileName = document.getElementById('uploaded-file-name');
+
+        const notesListContainer = document.getElementById('notes-list-container');
+        const noNotesView = document.getElementById('no-notes-view');
+        const notesCount = document.getElementById('notes-count');
+        const searchNotesInput = document.getElementById('search-notes');
+
+        const tabSummary = document.getElementById('tab-summary');
+        const tabInfographic = document.getElementById('tab-infographic');
+        const tabTranscript = document.getElementById('tab-transcript');
+
+        const workspaceEmpty = document.getElementById('workspace-empty');
+        const workspaceLoading = document.getElementById('workspace-loading');
+        const loadingTitle = document.getElementById('loading-title');
+        const loadingDescription = document.getElementById('loading-description');
+
+        const contentSummary = document.getElementById('content-summary');
+        const contentInfographic = document.getElementById('content-infographic');
+        const contentTranscript = document.getElementById('content-transcript');
+
+        const summaryTitle = document.getElementById('summary-title');
+        const summaryHtmlContent = document.getElementById('summary-html-content');
+        const infographicTitle = document.getElementById('infographic-title');
+        const transcriptText = document.getElementById('transcript-text');
+        const transcriptHeaderTitle = document.getElementById('transcript-header-title');
+        const currentNoteIndicator = document.getElementById('current-note-indicator');
+
+        const infoMetricsGrid = document.getElementById('info-metrics-grid');
+        const mindmapNodesLayer = document.getElementById('mindmap-nodes-layer');
+        const infographicTimelineFlow = document.getElementById('infographic-timeline-flow');
+
+        // Clipboard support
+        const btnCopySummary = document.getElementById('btn-copy-summary');
+        const btnCopyTranscript = document.getElementById('btn-copy-transcript');
+
+        // Page Load Initializer
+        window.addEventListener('load', () => {
+            // Setup icons
+            lucide.createIcons();
+            
+            // Set API input default
+            if (apiKey) {
+                apiKeyInput.value = apiKey;
+                apiStatusBadge.innerText = 'API Key Configured';
+                apiStatusBadge.parentElement.classList.add('bg-emerald-500/10', 'text-emerald-300');
+                apiStatusBadge.parentElement.classList.remove('bg-indigo-500/10', 'text-indigo-300');
             }
+
+            // Load saved notes
+            try {
+                const stored = localStorage.getItem('VOXTRAL_NOTES');
+                if (stored) {
+                    notesList = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error("Error reading storage notes", e);
+            }
+
+            renderNotesList();
+            setupEventListeners();
         });
 
-        // Handle Enter key for adding bullets
-        
-
-        // Speech Recognition Functions
-        function toggleTranscription() {
-            const transcribeButton = document.getElementById('transcribeButton');
-
-            if (isTranscribing) {
-                // Stop transcription
-                recognition.stop();
-                isTranscribing = false;
-                transcribeButton.textContent = '🎙️ Start Transcription';
-                transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
-            } else {
-                // Check for browser support
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert("Your browser does not support the Web Speech API. Please try Google Chrome or Microsoft Edge.");
-                    return;
+        // Event Listeners Setup
+        function setupEventListeners() {
+            // API Key management
+            btnApiSettings.addEventListener('click', () => {
+                apiModal.classList.remove('hidden');
+                apiKeyInput.focus();
+            });
+            btnApiModalClose.addEventListener('click', () => apiModal.classList.add('hidden'));
+            
+            btnSaveApi.addEventListener('click', () => {
+                const key = apiKeyInput.value.trim();
+                if (key) {
+                    apiKey = key;
+                    localStorage.setItem('MISTRAL_API_KEY', key);
+                    apiStatusBadge.innerText = 'API Key Active';
+                    apiStatusBadge.parentElement.classList.add('bg-emerald-500/10', 'text-emerald-300');
+                    apiStatusBadge.parentElement.classList.remove('bg-indigo-500/10', 'text-indigo-300');
+                    showToast('Mistral API Key successfully configured.', 'check-circle');
+                    apiModal.classList.add('hidden');
+                } else {
+                    showToast('Please specify a valid key format.', 'alert-triangle');
                 }
-
-                recognition = new SpeechRecognition();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'en-US';
-
-                let finalTranscript = '';
-
-                recognition.onstart = () => {
-                    isTranscribing = true;
-                    transcribeButton.textContent = '⏹️ Stop Transcription';
-                    transcribeButton.classList.replace('bg-purple-600', 'bg-red-600');
-                };
-
-                recognition.onresult = event => {
-                    let interimTranscript = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) {
-                            finalTranscript += event.results[i][0].transcript;
-                        } else {
-                            interimTranscript += event.results[i][0].transcript;
-                        }
-                    }
-
-                    // Append the new text to a temporary text area for a smooth experience
-                    const notesContent = document.getElementById('notesContent');
-                    let tempInput = document.getElementById('interimTranscription');
-                    if (!tempInput) {
-                        tempInput = document.createElement('textarea');
-                        tempInput.id = 'interimTranscription';
-                        tempInput.readOnly = true;
-                        tempInput.className = ' border-none outline-none bg-transparent text-gray-400 italic';
-                        const bullet = document.createElement('div');
-                        bullet.className = 'flex items-start gap-2';
-                        bullet.innerHTML = `<span class="text-gray-600 mt-1">•</span>`;
-                        bullet.appendChild(tempInput);
-                        notesContent.appendChild(bullet);
-                    }
-                    tempInput.value = finalTranscript + interimTranscript;
-                };
-                recognition.onspeechend = () => {
-                    recognition.start();
-                }
-
-                recognition.onend = async () => {
-                    // When transcription ends, remove the interim input and save the final text
-                    const notesContent = document.getElementById('notesContent');
-                    const tempInput = document.getElementById('interimTranscription');
-                    if (tempInput && finalTranscript.trim() !== '') {
-                        const newNoteText = finalTranscript.trim();
-                        tempInput.parentNode.remove();
-                        addNoteBulletWithText(newNoteText);
-                        await saveCurrentNote();
-                    } else if (tempInput) {
-                        tempInput.parentNode.remove();
-                    }
-                    isTranscribing = false;
-                    transcribeButton.textContent = '🎙️ Start Transcription';
-                    transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
-                };
-
-                recognition.onerror = event => {
-                    console.error('Speech recognition error:', event.error);
-                    alert(`Speech recognition error: ${event.error}`);
-                    isTranscribing = false;
-                    transcribeButton.textContent = '🎙️ Start Transcription';
-                    transcribeButton.classList.replace('bg-red-600', 'bg-purple-600');
-                };
-
-                recognition.start();
-            }
-        }
-
-        function addNoteBulletWithText(text) {
-            const notesContent = document.getElementById('notesContent');
-            const bullet = document.createElement('div');
-            bullet.className = 'flex items-start gap-2';
-            bullet.innerHTML = `
-                <span class="text-gray-600 mt-1">•</span>
-                <textarea class=" border-none outline-none bg-transparent" onchange="autoSave()">${text}</textarea>
-                <button onclick="this.parentElement.remove(); autoSave();" class="text-red-500 hover:text-red-700 text-sm">×</button>
-            `;
-            notesContent.appendChild(bullet);
-            bullet.querySelector('textarea').focus();
-            setupAutoresize();
-        }
-
-        // PDF Export Functions
-        function exportClassToPDF() {
-            const classObj = classes.find(c => c.id === currentClassId);
-            if (!classObj || !classObj.notes || classObj.notes.length === 0) {
-                alert('No notes to export in this class.');
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-
-            classObj.notes.forEach((note, index) => {
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                } const doc = new jsPDF();
-
-                // Header
-                doc.setFontSize(18);
-                doc.text(note.title || 'Untitled Note', 20, 30);
-
-                doc.setFontSize(12);
-                doc.text(`Class: ${classObj.name}`, 20, 45);
-                doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
-
-                let yPosition = 75;
-
-                // Cornell Note Layout
-                doc.setFontSize(14);
-                doc.text('Cornell Notes', 20, yPosition);
-                yPosition += 15;
-
-                // Draw Cornell layout lines
-                doc.line(20, yPosition, 190, yPosition); // Top line
-                doc.line(20, yPosition, 20, yPosition + 120); // Left line
-                doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
-                doc.line(190, yPosition, 190, yPosition + 120); // Right line
-                doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
-                doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
-
-                // Cues section
-                doc.setFontSize(10);
-                doc.text('Cues & Questions', 22, yPosition + 8);
-
-                let cueY = yPosition + 18;
-                if (note.cues && note.cues.length > 0) {
-                    note.cues.forEach(cue => {
-                        if (cueY < yPosition + 85) {
-                            const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
-                            cueLines.forEach(line => {
-                                if (cueY < yPosition + 85) {
-                                    doc.text(line, 22, cueY);
-                                    cueY += 5;
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // Notes section
-                doc.text('Notes', 72, yPosition + 8);
-
-                let notesY = yPosition + 18;
-                if (note.notes && note.notes.length > 0) {
-                    note.notes.forEach(noteText => {
-                        if (notesY < yPosition + 85) {
-                            const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
-                            noteLines.forEach(line => {
-                                if (notesY < yPosition + 85) {
-                                    doc.text(line, 72, notesY);
-                                    notesY += 5;
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // Summary section
-                doc.text('Summary', 22, yPosition + 98);
-
-                if (note.summary && note.summary.trim()) {
-                    const summaryLines = doc.splitTextToSize(note.summary, 165);
-                    let summaryY = yPosition + 108;
-                    summaryLines.forEach(line => {
-                        if (summaryY < yPosition + 118) {
-                            doc.text(line, 22, summaryY);
-                            summaryY += 5;
-                        }
-                    });
-                }
-
             });
 
-            doc.save(`${classObj.name}_Notes.pdf`);
+            btnClearApi.addEventListener('click', () => {
+                apiKey = '';
+                apiKeyInput.value = '';
+                localStorage.removeItem('MISTRAL_API_KEY');
+                apiStatusBadge.innerText = 'Set Mistral API Key';
+                apiStatusBadge.parentElement.classList.remove('bg-emerald-500/10', 'text-emerald-300');
+                apiStatusBadge.parentElement.classList.add('bg-indigo-500/10', 'text-indigo-300');
+                showToast('API Credentials cleared.', 'trash-2');
+                apiModal.classList.add('hidden');
+            });
+
+            // Tab Switching
+            tabSummary.addEventListener('click', () => setTab('summary'));
+            tabInfographic.addEventListener('click', () => setTab('infographic'));
+            tabTranscript.addEventListener('click', () => setTab('transcript'));
+
+            // Microphone Trigger
+            btnRecordToggle.addEventListener('click', toggleRecording);
+
+            // File Upload trigger
+            audioFileInput.addEventListener('change', handleFileUpload);
+
+            // Search Filter
+            searchNotesInput.addEventListener('input', (e) => {
+                renderNotesList(e.target.value);
+            });
+
+            // Clipboard Triggers
+            btnCopySummary.addEventListener('click', () => {
+                if (currentNoteId) {
+                    const note = notesList.find(n => n.id === currentNoteId);
+                    if (note) {
+                        copyToClipboard(note.summaryMarkdown || note.summaryHtml);
+                        showToast('Note summary copied to clipboard!', 'clipboard');
+                    }
+                }
+            });
+
+            btnCopyTranscript.addEventListener('click', () => {
+                if (currentNoteId) {
+                    const note = notesList.find(n => n.id === currentNoteId);
+                    if (note) {
+                        copyToClipboard(note.transcript);
+                        showToast('Audio transcription copied!', 'clipboard');
+                    }
+                }
+            });
         }
 
-        function exportNoteToPDF(noteId) {
-            const classObj = classes.find(c => c.id === currentClassId);
-            const note = classObj.notes.find(n => n.id === noteId);
+        // Toggle Microphone Capture
+        async function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
 
-            if (!note) {
-                alert('Note not found.');
+        // Start Microphone Recording
+        async function startRecording() {
+            if (!apiKey) {
+                showToast('Set your Mistral API Key to transcribe voice tracks.', 'key');
+                apiModal.classList.remove('hidden');
                 return;
             }
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Header
-            doc.setFontSize(18);
-            doc.text(note.title || 'Untitled Note', 20, 30);
-
-            doc.setFontSize(12);
-            doc.text(`Class: ${classObj.name}`, 20, 45);
-            doc.text(`Date: ${note.date || 'No date'}`, 20, 55);
-
-            let yPosition = 75;
-
-            // Cornell Note Layout
-            doc.setFontSize(14);
-            doc.text('Cornell Notes', 20, yPosition);
-            yPosition += 15;
-
-            // Draw Cornell layout lines
-            doc.line(20, yPosition, 190, yPosition); // Top line
-            doc.line(20, yPosition, 20, yPosition + 120); // Left line
-            doc.line(70, yPosition, 70, yPosition + 90); // Cue column separator
-            doc.line(190, yPosition, 190, yPosition + 120); // Right line
-            doc.line(20, yPosition + 90, 190, yPosition + 90); // Summary separator
-            doc.line(20, yPosition + 120, 190, yPosition + 120); // Bottom line
-
-            // Cues section
-            doc.setFontSize(10);
-            doc.text('Cues & Questions', 22, yPosition + 8);
-
-            let cueY = yPosition + 18;
-            if (note.cues && note.cues.length > 0) {
-                note.cues.forEach(cue => {
-                    if (cueY < yPosition + 85) {
-                        const cueLines = doc.splitTextToSize(`• ${cue}`, 45);
-                        cueLines.forEach(line => {
-                            if (cueY < yPosition + 85) {
-                                doc.text(line, 22, cueY);
-                                cueY += 5;
-                            }
-                        });
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
                     }
-                });
+                };
+
+                mediaRecorder.onstop = async () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    // Clean up audio hardware lines
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Transcribe processed tracks
+                    processAudioWorkspace(audioBlob);
+                };
+
+                // State configuration
+                isRecording = true;
+                btnRecordToggle.classList.replace('from-indigo-600', 'from-red-600');
+                btnRecordToggle.classList.replace('to-indigo-700', 'to-red-700');
+                recordBtnText.innerText = "Stop & Generate";
+                micIcon.className = "w-4 h-4 text-white animate-ping";
+                
+                recordingWave.classList.remove('hidden');
+                recordingIdle.classList.add('hidden');
+                recordTimer.classList.remove('hidden');
+                
+                recordingDuration = 0;
+                updateRecordTimer();
+                timerInterval = setInterval(() => {
+                    recordingDuration++;
+                    updateRecordTimer();
+                }, 1000);
+
+                mediaRecorder.start();
+                showToast('Voice recording started...', 'mic');
+
+            } catch (err) {
+                console.error("Audio recording permission or access error: ", err);
+                showToast('Microphone access denied or unsupported.', 'alert-triangle');
             }
-
-            // Notes section
-            doc.text('Notes', 72, yPosition + 8);
-
-            let notesY = yPosition + 18;
-            if (note.notes && note.notes.length > 0) {
-                note.notes.forEach(noteText => {
-                    if (notesY < yPosition + 85) {
-                        const noteLines = doc.splitTextToSize(`• ${noteText}`, 115);
-                        noteLines.forEach(line => {
-                            if (notesY < yPosition + 85) {
-                                doc.text(line, 72, notesY);
-                                notesY += 5;
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Summary section
-            doc.text('Summary', 22, yPosition + 98);
-
-            if (note.summary && note.summary.trim()) {
-                const summaryLines = doc.splitTextToSize(note.summary, 165);
-                let summaryY = yPosition + 108;
-                summaryLines.forEach(line => {
-                    if (summaryY < yPosition + 118) {
-                        doc.text(line, 22, summaryY);
-                        summaryY += 5;
-                    }
-                });
-            }
-
-            const fileName = `${note.title || 'Note'}_${classObj.name}.pdf`;
-            doc.save(fileName);
         }
 
+        // Stop Microphone Recording
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                // Clear hardware UI states
+                btnRecordToggle.classList.replace('from-red-600', 'from-indigo-600');
+                btnRecordToggle.classList.replace('to-red-700', 'to-indigo-700');
+                recordBtnText.innerText = "Start Voice Rec";
+                micIcon.className = "w-4 h-4 text-red-500 fill-red-500";
+                
+                recordingWave.classList.add('hidden');
+                recordingIdle.classList.remove('hidden');
+                recordTimer.classList.add('hidden');
+                clearInterval(timerInterval);
+                
+                showToast('Synthesizing voice stream...', 'loader');
+            }
+        }
 
+        // Format Duration
+        function updateRecordTimer() {
+            const minutes = Math.floor(recordingDuration / 60);
+            const seconds = recordingDuration % 60;
+            recordTimer.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Handle Audio File Drop / Select
+        async function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!apiKey) {
+                showToast('Please configure your Mistral API Key first.', 'key');
+                apiModal.classList.remove('hidden');
+                return;
+            }
+
+            uploadedFileName.innerText = file.name;
+            uploadedFileName.classList.remove('hidden');
+            
+            showToast(`Ready to process: ${file.name}`, 'file-check');
+            processAudioWorkspace(file);
+        }
+
+        // Standardised fetch engine with retries & exponential backoff
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    
+                    // Specific status code failures that won't improve
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error("Invalid Mistral API Key or unauthorized credentials.");
+                    }
+                } catch (err) {
+                    if (i === maxRetries - 1) throw err;
+                }
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2;
+            }
+            throw new Error("Mistral server request timeout. Please check key or connectivity.");
+        }
+
+        // Call Audio Transcribe (Voxtral Model) & Chat Completion Workspace
+        async function processAudioWorkspace(audioFile) {
+            workspaceEmpty.classList.add('hidden');
+            workspaceLoading.classList.remove('hidden');
+            
+            // Phase 1: Voxtral Transcription
+            loadingTitle.innerText = "Voxtral Voice Decoding...";
+            loadingDescription.innerText = "Uploading stream and generating raw audio-to-text with Voxtral-Mini.";
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', audioFile, 'voxtral_capture.webm');
+                formData.append('model', 'voxtral-mini-latest');
+
+                const transcriptionResponse = await fetchWithRetry('https://api.mistral.ai/v1/audio/transcriptions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: formData
+                });
+
+                const transcribeResult = await transcriptionResponse.json();
+                const transcript = transcribeResult.text;
+
+                if (!transcript || transcript.trim().length === 0) {
+                    throw new Error("Zero-length audio transcript was returned. Please try speaking with clearer volume.");
+                }
+
+                // Phase 2: Structural Infographic Drafting
+                loadingTitle.innerText = "Drafting Notes & Diagram Details...";
+                loadingDescription.innerText = "Mistral Large is parsing concepts, timeline markers, key highlights, and structured Markdown summaries.";
+
+                const systemInstruction = `You are a professional designer and note architect specializing in executive note curation.
+Analyze this audio transcription and construct an exceptional structured summary AND interactive visual data model.
+
+You must respond exclusively with a valid JSON object matching this structural contract:
+{
+  "title": "A highly professional, punchy and descriptive title for the note",
+  "summaryHtml": "A clean, beautiful, HTML5 summary of the content containing styled headers, key bullet points, structured bullet grids, and highlighted key-terms. Wrap key terms inside '<strong class=\\"text-indigo-400 font-bold\\">...</strong>' tags. Do not output generic HTML templates; use clear inline Tailwind-friendly class styles in formatting if possible.",
+  "summaryMarkdown": "An equivalent markdown summary formatted perfectly with clear markdown highlights.",
+  "metrics": [
+    { "label": "Highlighted Stat/Insight", "value": "A brief metric value (e.g. '80%', 'Phase 2', 'Priority High')", "icon": "Lucide icon string names e.g. check-circle, eye, brain, flame, star, compass, clock, alert-circle" }
+  ],
+  "nodes": [
+    { "id": "1", "label": "Core Title Idea", "category": "Core Concept", "desc": "Context detail" },
+    { "id": "2", "label": "Key Concept 1", "category": "Insight", "desc": "Support descriptions" }
+  ],
+  "links": [
+    { "from": "1", "to": "2", "relation": "supports" }
+  ],
+  "timeline": [
+    { "phase": "Step 1 or Major Action Card", "desc": "Clear milestone actions needed or chronological summary.", "status": "Ready, Scheduled, In Progress, Complete" }
+  ]
+}
+
+Ensure your output contains a maximum of 6 relational nodes so the Concept SVG Map does not look overcrowded on mobile views. Include at least 3 custom action milestones. Give highly precise insight labels. Only output JSON! No extra text!`;
+
+                const chatResponse = await fetchWithRetry('https://api.mistral.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'mistral-large-latest',
+                        messages: [
+                            { role: 'system', content: systemInstruction },
+                            { role: 'user', content: `Here is the audio transcript: "${transcript}"` }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                const chatResult = await chatResponse.json();
+                const responseText = chatResult.choices[0].message.content;
+                const structuredData = JSON.parse(responseText);
+
+                // Phase 3: Model and Storage Syncing
+                const newNote = {
+                    id: 'note_' + Date.now(),
+                    timestamp: new Date().toLocaleString(),
+                    transcript: transcript,
+                    title: structuredData.title || "Voice note capture",
+                    summaryHtml: structuredData.summaryHtml,
+                    summaryMarkdown: structuredData.summaryMarkdown,
+                    metrics: structuredData.metrics || [],
+                    nodes: structuredData.nodes || [],
+                    links: structuredData.links || [],
+                    timeline: structuredData.timeline || []
+                };
+
+                notesList.unshift(newNote);
+                localStorage.setItem('VOXTRAL_NOTES', JSON.stringify(notesList));
+
+                renderNotesList();
+                loadNoteDetails(newNote.id);
+                showToast('Note created & Infographics generated!', 'sparkles');
+
+            } catch (error) {
+                console.error("Transcribing or Processing Error: ", error);
+                showToast(error.message || "An unexpected error occurred during processing.", "alert-octagon");
+                workspaceLoading.classList.add('hidden');
+                workspaceEmpty.classList.remove('hidden');
+            }
+        }
+
+        // Render Sidebar Notes Archive
+        function renderNotesList(filterText = '') {
+            notesListContainer.innerHTML = '';
+            
+            const filtered = notesList.filter(note => {
+                const searchStr = `${note.title} ${note.transcript}`.toLowerCase();
+                return searchStr.includes(filterText.toLowerCase());
+            });
+
+            notesCount.innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                noNotesView.classList.remove('hidden');
+                return;
+            }
+
+            noNotesView.classList.add('hidden');
+
+            filtered.forEach(note => {
+                const isActive = note.id === currentNoteId;
+                const item = document.createElement('div');
+                item.className = `p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
+                    isActive 
+                    ? 'bg-gradient-to-r from-indigo-950/70 to-indigo-900/60 border-indigo-500 shadow-md shadow-indigo-950/50' 
+                    : 'bg-slate-900/40 hover:bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                }`;
+
+                item.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <h4 class="font-extrabold text-xs tracking-tight text-white line-clamp-2 pr-1">${note.title}</h4>
+                        <button onclick="deleteNote(event, '${note.id}')" class="p-1 hover:bg-slate-800 hover:text-red-400 rounded text-slate-500 transition-colors">
+                            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 line-clamp-2 leading-relaxed">${note.transcript}</p>
+                    <div class="flex items-center justify-between text-[9px] text-slate-500 mt-1">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="calendar" class="w-3 h-3 text-indigo-400"></i> ${note.timestamp}
+                        </span>
+                        <span class="font-bold uppercase tracking-wider text-[8px] bg-slate-950/60 px-1.5 py-0.5 rounded border border-slate-800 text-indigo-300">
+                            Infographic
+                        </span>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => loadNoteDetails(note.id));
+                notesListContainer.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Load Note Details onto Content Boards
+        function loadNoteDetails(id) {
+            currentNoteId = id;
+            const note = notesList.find(n => n.id === id);
+            if (!note) return;
+
+            // Highlight Active Sidebar Element
+            renderNotesList();
+
+            // Configure Headers & Targets
+            currentNoteIndicator.innerText = `Active Note: ${note.title}`;
+            summaryTitle.innerText = note.title;
+            infographicTitle.innerText = `Infographic: ${note.title}`;
+            transcriptText.innerText = note.transcript;
+            transcriptHeaderTitle.innerText = `${note.title} (Transcript)`;
+
+            // Formatted Summary Document Inserter
+            summaryHtmlContent.innerHTML = note.summaryHtml;
+
+            // Infographic Module Generator
+            generateVisualInfographics(note);
+
+            // Interface States
+            workspaceEmpty.classList.add('hidden');
+            workspaceLoading.classList.add('hidden');
+            setTab(activeTab);
+        }
+
+        // Visual Infographic Generator Engine
+        function generateVisualInfographics(note) {
+            // Clear prior charts
+            infoMetricsGrid.innerHTML = '';
+            mindmapNodesLayer.innerHTML = '';
+            infographicTimelineFlow.innerHTML = '';
+            
+            const svg = document.getElementById('mindmap-svg');
+            svg.innerHTML = ''; // reset SVG connection overlays
+
+            // 1. Generate Highlight Cards
+            if (note.metrics && note.metrics.length > 0) {
+                note.metrics.forEach(metric => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel-light p-3.5 rounded-xl border border-slate-800/80 flex items-center gap-3 relative overflow-hidden group hover:border-indigo-500/30 transition-all';
+                    card.innerHTML = `
+                        <div class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:scale-110 transition-transform">
+                            <i data-lucide="${metric.icon || 'star'}" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold block">${metric.label}</span>
+                            <span class="text-sm font-extrabold text-white tracking-tight">${metric.value}</span>
+                        </div>
+                    `;
+                    infoMetricsGrid.appendChild(card);
+                });
+            } else {
+                infoMetricsGrid.innerHTML = `
+                    <div class="col-span-3 text-center py-2 text-xs text-slate-500">
+                        No highlight indicators generated.
+                    </div>
+                `;
+            }
+
+            // 2. Generate Interactive Concept Mindmap
+            const nodes = note.nodes || [];
+            const links = note.links || [];
+
+            if (nodes.length > 0) {
+                const nodePositions = {};
+                const width = 450;
+                const height = 240;
+
+                // Position nodes systematically
+                nodes.forEach((node, idx) => {
+                    let x, y;
+                    if (idx === 0) {
+                        // Root central node
+                        x = width / 2;
+                        y = height / 2;
+                    } else {
+                        // Spread nodes out circularly
+                        const angle = (idx / (nodes.length - 1)) * 2 * Math.PI;
+                        const radius = 90; // radius of circle layout
+                        x = (width / 2) + radius * Math.cos(angle);
+                        y = (height / 2) + radius * Math.sin(angle);
+                    }
+                    nodePositions[node.id] = { x, y };
+                });
+
+                // Generate SVG connection lines
+                links.forEach(link => {
+                    const fromNode = nodePositions[link.from];
+                    const toNode = nodePositions[link.to];
+
+                    if (fromNode && toNode) {
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        // Curved lines
+                        const dx = toNode.x - fromNode.x;
+                        const dy = toNode.y - fromNode.y;
+                        const dr = Math.sqrt(dx * dx + dy * dy);
+                        
+                        path.setAttribute('d', `M${fromNode.x},${fromNode.y}A${dr},${dr} 0 0,1 ${toNode.x},${toNode.y}`);
+                        path.setAttribute('fill', 'none');
+                        path.setAttribute('stroke', '#6366f1');
+                        path.setAttribute('stroke-opacity', '0.25');
+                        path.setAttribute('stroke-width', '1.5');
+                        path.setAttribute('class', 'mindmap-link');
+                        svg.appendChild(path);
+                    }
+                });
+
+                // Generate interactive Nodes in DOM layer
+                nodes.forEach((node, idx) => {
+                    const pos = nodePositions[node.id];
+                    const el = document.createElement('button');
+                    const isRoot = idx === 0;
+
+                    el.className = `absolute z-10 p-2.5 rounded-lg text-left transition-all active:scale-95 shadow-md ${
+                        isRoot 
+                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white border-2 border-indigo-400 font-bold scale-105' 
+                        : 'bg-slate-900 border border-slate-700 text-slate-100 hover:border-violet-500 hover:bg-slate-950'
+                    }`;
+
+                    // Transform and position via JS styles
+                    const percentageX = (pos.x / width) * 100;
+                    const percentageY = (pos.y / height) * 100;
+                    el.style.left = `calc(${percentageX}% - 60px)`;
+                    el.style.top = `calc(${percentageY}% - 30px)`;
+                    el.style.width = '120px';
+
+                    el.innerHTML = `
+                        <span class="block text-[8px] uppercase tracking-wider font-extrabold ${isRoot ? 'text-indigo-100' : 'text-indigo-400'}">${node.category || 'Concept'}</span>
+                        <span class="block text-[10px] truncate font-bold mt-0.5 leading-tight">${node.label}</span>
+                    `;
+
+                    el.addEventListener('click', () => {
+                        openNodeDetail(node.label, node.desc || 'No further analysis available.', node.category || 'Idea');
+                    });
+
+                    mindmapNodesLayer.appendChild(el);
+                });
+
+            } else {
+                mindmapNodesLayer.innerHTML = `
+                    <div class="text-center text-xs text-slate-500 py-6">
+                        Concept architecture diagrams were not generated.
+                    </div>
+                `;
+            }
+
+            // 3. Generate Chronological Actions & Timeline Steps
+            const timeline = note.timeline || [];
+            if (timeline.length > 0) {
+                timeline.forEach((step, idx) => {
+                    const card = document.createElement('div');
+                    
+                    // Style by action progress status
+                    let statusColor = 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+                    if (step.status === 'Complete') {
+                        statusColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                    } else if (step.status === 'In Progress') {
+                        statusColor = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                    }
+
+                    card.className = 'flex gap-3 items-start relative pl-6 pb-2.5 last:pb-0 group';
+                    card.innerHTML = `
+                        <!-- Line connectors -->
+                        <div class="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-800 group-last:hidden"></div>
+                        <div class="absolute left-1 top-1.5 w-3.5 h-3.5 rounded-full border border-indigo-500/40 bg-slate-950 flex items-center justify-center z-10">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 group-hover:bg-violet-400"></span>
+                        </div>
+                        
+                        <div class="flex-1 glass-panel-light p-3 rounded-lg border border-slate-800/80 hover:border-slate-700/80 transition-all flex items-start justify-between gap-4">
+                            <div>
+                                <h5 class="text-xs font-extrabold text-white tracking-tight">${step.phase}</h5>
+                                <p class="text-[10px] text-slate-400 mt-0.5 leading-normal">${step.desc}</p>
+                            </div>
+                            <span class="text-[8px] font-extrabold px-1.5 py-0.5 rounded border ${statusColor} shrink-0 uppercase tracking-widest">
+                                ${step.status || 'Active'}
+                            </span>
+                        </div>
+                    `;
+                    infographicTimelineFlow.appendChild(card);
+                });
+            } else {
+                infographicTimelineFlow.innerHTML = `
+                    <div class="text-center py-6 text-xs text-slate-500">No action items or timeline generated.</div>
+                `;
+            }
+
+            lucide.createIcons();
+        }
+
+        // Handle Active Workspace Views & Tab Highlighting
+        function setTab(tab) {
+            activeTab = tab;
+            
+            // Standardise tab style states
+            const inactiveStyle = "px-3.5 py-1.5 text-xs font-bold rounded-md transition-all text-slate-400 hover:text-white";
+            const activeStyle = "px-3.5 py-1.5 text-xs font-bold rounded-md transition-all bg-indigo-600 text-white";
+
+            tabSummary.className = inactiveStyle;
+            tabInfographic.className = inactiveStyle;
+            tabTranscript.className = inactiveStyle;
+
+            contentSummary.classList.add('hidden');
+            contentInfographic.classList.add('hidden');
+            contentTranscript.classList.add('hidden');
+
+            if (tab === 'summary') {
+                tabSummary.className = activeStyle;
+                if (currentNoteId) contentSummary.classList.remove('hidden');
+            } else if (tab === 'infographic') {
+                tabInfographic.className = activeStyle;
+                if (currentNoteId) contentInfographic.classList.remove('hidden');
+            } else if (tab === 'transcript') {
+                tabTranscript.className = activeStyle;
+                if (currentNoteId) contentTranscript.classList.remove('hidden');
+            }
+
+            if (!currentNoteId) {
+                workspaceEmpty.classList.remove('hidden');
+            }
+        }
+
+        // Concept Node Detail Modal Controls
+        function openNodeDetail(title, desc, cat) {
+            document.getElementById('node-modal-title').innerText = title;
+            document.getElementById('node-modal-desc').innerText = desc;
+            document.getElementById('node-modal-cat').innerText = cat;
+            document.getElementById('node-detail-modal').classList.remove('hidden');
+        }
+
+        function closeNodeDetail() {
+            document.getElementById('node-detail-modal').classList.add('hidden');
+        }
+
+        // Delete Captured Note
+        function deleteNote(e, id) {
+            e.stopPropagation();
+            notesList = notesList.filter(note => note.id !== id);
+            localStorage.setItem('VOXTRAL_NOTES', JSON.stringify(notesList));
+
+            showToast('Note deleted from local history.', 'trash-2');
+
+            if (currentNoteId === id) {
+                currentNoteId = null;
+                workspaceEmpty.classList.remove('hidden');
+                contentSummary.classList.add('hidden');
+                contentInfographic.classList.add('hidden');
+                contentTranscript.classList.add('hidden');
+                currentNoteIndicator.innerText = "No note selected";
+            }
+
+            renderNotesList();
+        }
+
+        // Clipboard Copy Helper (Standard API Fallbacks)
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+        }
+
+        // Dynamic Toast Notifications
+        function showToast(message, iconName = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMessage.innerText = message;
+            toastIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons();
+
+            toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Load Sample Note data to experience the app out-of-the-box
+        function loadSampleNote() {
+            const sampleNote = {
+                id: 'note_sample_lecture',
+                timestamp: new Date().toLocaleString(),
+                title: "Quantum Computing & Entanglement Basics",
+                transcript: "Welcome to today's microlecture on quantum computing. We are covering qubits, superposition, and entanglement. Unlike standard bits, qubits can run in superposition. Entanglement binds two qubits. Quantum Supremacy implies surpassing classical calculations.",
+                summaryMarkdown: `# Quantum Computing & Entanglement
+
+## Executive Summary
+This lecture introduces the primary architecture of **quantum computation**, explaining why it differs fundamentally from standard hardware. 
+
+## Key Core Takeaways
+* **Superposition**: Enables qubits to process complex states concurrently.
+* **Entanglement**: Linking qubits for synchronous multi-state operations.
+* **Quantum Supremacy**: The threshold where classical calculations are outpaced.`,
+                summaryHtml: `
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-extrabold text-white border-l-4 border-indigo-500 pl-3">Microlecture: Principles of Quantum Entanglement</h4>
+                        <p class="text-sm leading-relaxed text-slate-300">
+                            A comparative overview detailing the fundamental transition from classical binary networks into multi-dimensional <strong class="text-indigo-400 font-bold">quantum processing units (QPUs)</strong>.
+                        </p>
+                        <div class="bg-indigo-950/20 p-4 rounded-xl border border-indigo-500/10 mt-4">
+                            <h5 class="text-xs font-bold text-slate-200 uppercase tracking-widest mb-2">Core Mechanisms Explored:</h5>
+                            <ul class="list-disc pl-4 space-y-2 text-xs text-slate-300">
+                                <li><strong class="text-indigo-400 font-bold">Qubits</strong>: The core processing item capable of holding simultaneous logical options using subatomic particle mechanics.</li>
+                                <li><strong class="text-indigo-400 font-bold">Quantum Superposition</strong>: Processing physical configurations in parallel states.</li>
+                                <li><strong class="text-indigo-400 font-bold">Quantum Supremacy</strong>: Reaching execution velocities impossible for standard supercomputers.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                metrics: [
+                    { label: "Core Topic", value: "Quantum Mechanics", icon: "brain" },
+                    { label: "Complexity Rating", value: "Advanced Level", icon: "flame" },
+                    { label: "Core Focus", value: "Qubits & Entanglement", icon: "compass" }
+                ],
+                nodes: [
+                    { id: "1", label: "Quantum Core", category: "Core Concept", desc: "The foundational baseline of quantum mechanics applications." },
+                    { id: "2", label: "Qubits State", category: "Hardware", desc: "Physical matter properties behaving as dynamic values." },
+                    { id: "3", label: "Superposition", category: "Physics", desc: "Allows continuous parallel values." },
+                    { id: "4", label: "Supremacy Limit", category: "Milestone", desc: "The transition threshold where classic computing ceases viability." }
+                ],
+                links: [
+                    { from: "1", to: "2", relation: "defined by" },
+                    { from: "2", to: "3", relation: "enables" },
+                    { from: "1", to: "4", relation: "aims for" }
+                ],
+                timeline: [
+                    { phase: "Phase 1: Binary Transition", desc: "Transition standard digital instructions into probability architectures.", status: "Complete" },
+                    { phase: "Phase 2: Entangled Circuits", desc: "Maintain coherent superposition and measure resulting interference patterns.", status: "In Progress" },
+                    { phase: "Phase 3: Fault-Tolerant Scaling", desc: "Scale beyond 1,000 physical qubits to demonstrate supremacy.", status: "Scheduled" }
+                ]
+            };
+
+            // Store & Display
+            notesList.unshift(sampleNote);
+            localStorage.setItem('VOXTRAL_NOTES', JSON.stringify(notesList));
+            
+            renderNotesList();
+            loadNoteDetails(sampleNote.id);
+            showToast('Sample quantum computing notes loaded!', 'sparkles');
+        }
     </script>
 </body>
-
 </html>
+
